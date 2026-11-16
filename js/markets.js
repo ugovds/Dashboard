@@ -1007,10 +1007,7 @@ function getPortfolioChartData(timeframe = '24h') {
     for (let i = 0; i < N; i++) {
       const t = i / (N - 1);
       const hoursAgo = Math.round(24 * (1 - t));
-      const trend = startVal + (currentTotal - startVal) * t;
-      const wave = Math.sin(t * Math.PI * 2.4) * (currentTotal * 0.0032);
-      const micro = Math.cos(t * Math.PI * 5.2) * (currentTotal * 0.0016);
-      let val = trend + wave + micro;
+      let val = startVal + (currentTotal - startVal) * t;
       if (i === 0) val = startVal;
       if (i === N - 1) val = currentTotal;
 
@@ -1021,7 +1018,7 @@ function getPortfolioChartData(timeframe = '24h') {
       points.push({
         value: Number(val.toFixed(2)),
         label,
-        date: hoursAgo === 0 ? `Aujourd'hui à ${timeStr} (Direct)` : `Il y a ${hoursAgo}h (${timeStr})`,
+        date: hoursAgo === 0 ? `Aujourd'hui à ${timeStr}` : `Il y a ${hoursAgo}h (${timeStr})`,
         changePct: ((val - startVal) / startVal) * 100,
         changeEur: val - startVal
       });
@@ -1055,8 +1052,7 @@ function getPortfolioChartData(timeframe = '24h') {
       const t = i / 6;
       const d = new Date(now.getTime() - daysAgo * 86400000);
       const trend = startVal + (currentTotal - startVal) * t;
-      const wave = Math.sin(t * Math.PI * 2.8) * (currentTotal * 0.005);
-      let val = trend + wave;
+      let val = trend;
       if (i === 0) val = startVal;
       if (i === 6) val = currentTotal;
 
@@ -1107,9 +1103,8 @@ function getPortfolioChartData(timeframe = '24h') {
 
       const t = i / 29;
       const baseTrend = startVal + ((currentTotal - dcaAmount) - startVal) * t;
-      const wave = Math.sin(t * Math.PI * 3.5) * (currentTotal * 0.007);
       const dcaInjection = isPastOrAt19 ? dcaAmount : 0;
-      let val = baseTrend + wave + dcaInjection;
+      let val = baseTrend + dcaInjection;
       if (i === 0) val = startVal;
       if (i === 29) val = currentTotal;
 
@@ -1682,6 +1677,8 @@ window.checkAndApplyScheduledDca = checkAndApplyScheduledDca;
 window.portfolioState = portfolioState;
 window.openPortfolioManageModal = openPortfolioManageModal;
 window.closePortfolioManageModal = closePortfolioManageModal;
+window.getNextDcaDateInfo = getNextDcaDateInfo;
+window.isRealBourseDataActive = () => isRealBourseDataActive;
 
 /**
  * Génère un tracé SVG spline lissé pour la sparkline
@@ -1760,6 +1757,41 @@ let currentHeroChartPoints = [];
 // Cache des données 24h pour réactivité instantanée
 const chart24hCache = {};
 
+// Indicateur et URL du serveur local runner.py pour les flux Yahoo Finance
+let marketRunnerBaseUrl = null;
+let isRealBourseDataActive = false;
+
+/**
+ * Détecte l'URL du serveur local runner.py pour relayer les flux réels Yahoo Finance
+ */
+async function detectMarketRunner() {
+  if (marketRunnerBaseUrl !== null) return marketRunnerBaseUrl;
+  const candidates = [
+    '', // Si servi directement sur le même port que runner.py
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    'http://127.0.0.1:8080',
+    'http://localhost:8080'
+  ];
+
+  for (const base of candidates) {
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 350);
+      const res = await fetch(`${base}/api/status`, { signal: controller.signal });
+      clearTimeout(tid);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.engine === 'local-native') {
+          marketRunnerBaseUrl = base;
+          return base;
+        }
+      }
+    } catch {}
+  }
+  return null;
+}
+
 /**
  * Récupère ou génère une courbe 24h authentique et fluide pour un actif
  */
@@ -1821,48 +1853,28 @@ async function get24hChartData(asset) {
     }
   }
 
-  // 2. Trajectoire 24h réaliste pour Actions, ETF, Indices, Forex, Matières
-  const changePct = typeof asset.baseChange === 'number' ? asset.baseChange : 0;
-  const startP = Number((asset.basePrice / (1 + changePct / 100)).toFixed(2));
-  const dayL = asset.dayLow || Math.min(startP, asset.basePrice) * 0.992;
-  const dayH = asset.dayHigh || Math.max(startP, asset.basePrice) * 1.008;
-
-  // Profil à 18 points réguliers sur 24h
-  const N = 18;
-  const sampled = [];
-  const seed = (asset.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 20) / 10;
-
-  for (let i = 0; i < N; i++) {
-    const t = i / (N - 1);
-    const trend = startP + (asset.basePrice - startP) * t;
-    const wave = Math.sin(t * Math.PI * 2.5 + seed) * (dayH - dayL) * 0.18;
-    const micro = Math.cos(t * Math.PI * 4.8 + seed * 1.4) * (dayH - dayL) * 0.08;
-    let p = trend + wave + micro;
-    p = Math.max(dayL, Math.min(dayH, p));
-
-    const hoursAgo = Math.round(24 * (1 - t));
-    const label = hoursAgo === 0 ? 'Maintenant' : (hoursAgo === 24 ? 'Il y a 24h' : `Il y a ${hoursAgo}h`);
-    sampled.push({ price: Number(p.toFixed(2)), timeLabel: label });
+  // 2. Cours réels 24h via runner.py pour Actions, ETF, Indices & Matières
+  if (asset.type !== 'crypto') {
+    try {
+      const runner = await detectMarketRunner();
+      if (runner !== null) {
+        const res = await fetch(`${runner}/api/market/chart?asset=${asset.id}&range=1d&interval=5m`);
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload && payload.data && Array.isArray(payload.data.points) && payload.data.points.length >= 3) {
+            const chartData = payload.data;
+            chart24hCache[cacheKey] = chartData;
+            return chartData;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Markets] Erreur récupération courbe 24h:', e);
+    }
   }
 
-  sampled[0].price = startP;
-  sampled[0].timeLabel = 'Il y a 24h';
-  sampled[sampled.length - 1].price = asset.basePrice;
-  sampled[sampled.length - 1].timeLabel = 'Maintenant (Direct)';
-
-  const prices = sampled.map((p) => p.price);
-  const result = {
-    points: sampled,
-    startPrice: startP,
-    endPrice: asset.basePrice,
-    changePct,
-    high: Math.max(...prices, dayH),
-    low: Math.min(...prices, dayL),
-    axisLabels: { start: 'Il y a 24h', mid: 'Il y a 12h', end: 'Maintenant (Direct)' }
-  };
-
-  chart24hCache[cacheKey] = result;
-  return result;
+  // Aucune donnée réelle disponible : aucun tracé simulé
+  return null;
 }
 
 /**
@@ -1892,7 +1904,7 @@ async function renderHeroSpotlight(assetId = currentHeroAssetId) {
   if (nameEl) nameEl.textContent = asset.name;
   if (symEl) symEl.textContent = asset.symbol.includes(':') ? asset.symbol.split(':')[1] : asset.symbol;
   if (iconEl) iconEl.innerHTML = `<i class="${asset.icon || 'fa-solid fa-chart-line'}"></i>`;
-  if (exchangeEl) exchangeEl.textContent = `${asset.exchange || 'Marché International'} • Cotation en temps réel`;
+  if (exchangeEl) exchangeEl.textContent = asset.exchange || 'Marché International';
 
   const isPositive = asset.baseChange >= 0;
   const sign = isPositive ? '+' : '';
@@ -2375,6 +2387,11 @@ async function renderCleanLineChart(asset) {
   if (!svgLine || !svgArea || !asset) return;
 
   const chartData = await get24hChartData(asset);
+  if (!chartData || !chartData.points || !chartData.points.length) {
+    svgLine.setAttribute('d', '');
+    svgArea.setAttribute('d', '');
+    return;
+  }
   const points = chartData.points;
   const prices = points.map((p) => p.price);
   const startPrice = chartData.startPrice;
@@ -2716,13 +2733,94 @@ async function fetchLiveMarketData() {
     }
   } catch {}
 
-  // Micro-fluctuations réalistes sur les indices et actions pour simuler le direct
-  marketAssets.forEach((a) => {
-    if (['stock', 'index', 'etf', 'commodity'].includes(a.type)) {
-      const wiggle = (Math.random() - 0.5) * 0.002 * a.basePrice;
-      a.basePrice = Number((a.basePrice + wiggle).toFixed(2));
+  // 3. Cotations Boursières Réelles (Actions, ETF, Indices, Matières Premières) via runner.py
+  let realQuotesReceived = false;
+  let quoteErrorMessage = '';
+  try {
+    const runner = await detectMarketRunner();
+    if (!runner) {
+      throw new Error("Serveur local non joignable. Lancez `./runner.py` pour alimenter les cours.");
     }
-  });
+    const res = await fetch(`${runner}/api/market/quotes`);
+    if (!res.ok) {
+      throw new Error(`Erreur serveur (${res.status}).`);
+    }
+    const payload = await res.json();
+    if (payload && payload.status === 'ok' && payload.quotes) {
+      const quotes = payload.quotes;
+      Object.entries(quotes).forEach(([id, q]) => {
+        const asset = marketAssets.find((a) => a.id === id);
+        if (asset && q && typeof q.price === 'number') {
+          asset.basePrice = q.price;
+          if (typeof q.change === 'number') asset.baseChange = q.change;
+          if (typeof q.dayLow === 'number') asset.dayLow = q.dayLow;
+          if (typeof q.dayHigh === 'number') asset.dayHigh = q.dayHigh;
+          if (q.currency === 'USD') asset.unit = '$';
+          else if (q.currency === 'EUR') asset.unit = '€';
+        }
+      });
+      realQuotesReceived = true;
+      isRealBourseDataActive = true;
+    } else {
+      throw new Error("Réponse de cotations invalide.");
+    }
+  } catch (err) {
+    quoteErrorMessage = err.message || "Erreur réseau.";
+    isRealBourseDataActive = false;
+    console.error('[Markets]', err);
+  }
+
+  const errorBanner = document.getElementById('market-error-banner');
+  const updateTextEl = document.getElementById('market-last-update-text');
+  const dashUpdateTextEl = document.getElementById('dash-portfolio-last-update');
+  const dashSubTitleEl = document.getElementById('dash-portfolio-sub-title');
+
+  // Si échec de la récupération des cours réels : AFFICHER STRICTEMENT L'ERREUR, AUCUNE FAUSSE DONNÉE
+  if (!realQuotesReceived) {
+    if (errorBanner) {
+      errorBanner.hidden = false;
+      errorBanner.removeAttribute('hidden');
+      errorBanner.style.display = 'flex';
+      const textElem = errorBanner.querySelector('.market-error-text');
+      if (textElem) {
+        textElem.innerHTML = `<strong>Impossible de charger les cotations en direct.</strong><span>${quoteErrorMessage} Lancez <code>./runner.py</code> pour actualiser.</span>`;
+      }
+    }
+    if (updateTextEl) {
+      updateTextEl.innerHTML = '<span style="color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Hors-ligne</span>';
+    }
+    if (dashUpdateTextEl) {
+      dashUpdateTextEl.innerHTML = '<span style="color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Hors-ligne</span>';
+    }
+    if (dashSubTitleEl) {
+      dashSubTitleEl.innerHTML = '<span style="color:#f87171;">⚠️ Cotations non connectées (lancez ./runner.py)</span>';
+    }
+    if (refreshBtn) {
+      setTimeout(() => refreshBtn.querySelector('i')?.classList.remove('fa-spin'), 400);
+    }
+    return false;
+  }
+
+  // Succès réel : masquer la bannière d'erreur et afficher l'heure exacte d'actualisation
+  if (errorBanner) {
+    errorBanner.hidden = true;
+    errorBanner.setAttribute('hidden', '');
+    errorBanner.style.display = 'none';
+  }
+
+  const now = new Date();
+  const timeFormatted = `${String(now.getHours()).padStart(2, '0')}h${String(now.getMinutes()).padStart(2, '0')}`;
+  const updateLabel = `Actualisé à ${timeFormatted}`;
+
+  if (updateTextEl) {
+    updateTextEl.innerHTML = `<i class="fa-solid fa-circle" style="color: #10b981; font-size: 0.45rem;"></i> ${updateLabel}`;
+  }
+  if (dashUpdateTextEl) {
+    dashUpdateTextEl.textContent = updateLabel;
+  }
+  if (dashSubTitleEl) {
+    dashSubTitleEl.textContent = 'Performance globale & Versements DCA';
+  }
 
   saveMarketAssets();
   renderPortfolioModule();
@@ -2737,8 +2835,9 @@ async function fetchLiveMarketData() {
   }
 
   if (refreshBtn) {
-    setTimeout(() => refreshBtn.querySelector('i')?.classList.remove('fa-spin'), 600);
+    setTimeout(() => refreshBtn.querySelector('i')?.classList.remove('fa-spin'), 500);
   }
+  return true;
 }
 
 /**
@@ -2940,6 +3039,14 @@ function initMarkets() {
     if (e.key === 'Escape') closeChartModal();
   });
 
+  // Bouton de réessai en cas d'erreur de connexion
+  const retryBtn = document.getElementById('market-retry-btn');
+  if (retryBtn) {
+    retryBtn.addEventListener('click', () => {
+      fetchLiveMarketData();
+    });
+  }
+
   // Bouton d'actualisation manuelle
   if (refreshBtn) {
     refreshBtn.addEventListener('click', () => {
@@ -2952,3 +3059,5 @@ function initMarkets() {
   fetchLiveMarketData();
   setInterval(fetchLiveMarketData, 60000);
 }
+
+window.fetchLiveMarketData = fetchLiveMarketData;

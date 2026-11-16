@@ -235,6 +235,73 @@
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
 }
 
+/* Bannière d'erreur cotations boursières */
+.market-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 14px;
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1rem;
+  color: #fca5a5;
+  animation: fadeIn 0.3s ease;
+}
+
+.market-error-banner[hidden] {
+  display: none !important;
+}
+
+.market-error-content {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.market-error-content i {
+  font-size: 1.35rem;
+  color: #ef4444;
+  flex-shrink: 0;
+}
+
+.market-error-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.82rem;
+}
+
+.market-error-text strong {
+  color: #ffffff;
+  font-size: 0.88rem;
+}
+
+.market-error-text code {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  color: #f87171;
+  font-family: monospace;
+}
+
+.market-last-update-text {
+  font-size: 0.75rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-right: 0.5rem;
+  white-space: nowrap;
+}
+
+.market-last-update-text i {
+  font-size: 0.45rem;
+  color: #10b981;
+}
+
 /* --- 2. BANDEAU DES GRANDS INDICES MONDIAUX --- */
 .markets-marquee-wrap {
   width: 100%;

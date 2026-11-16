@@ -107,6 +107,7 @@ function initDeckViewSlider() {
       const renderTargetView = () => {
         if (target === 'dashboard') {
           if (typeof initOverviewDashboard === 'function') initOverviewDashboard();
+          if (typeof fetchLiveMarketData === 'function') fetchLiveMarketData();
         } else if (target === 'bookmarks') {
           if (typeof renderCategories === 'function') renderCategories();
         } else if (target === 'agenda') {
@@ -135,6 +136,10 @@ function initDeckViewSlider() {
           if (typeof renderMarketBarometer === 'function') renderMarketBarometer();
           if (typeof renderMarketMovers === 'function') renderMarketMovers();
           if (typeof renderForexCryptoModule === 'function') renderForexCryptoModule();
+          // Actualisation automatique immédiate des cours en direct
+          if (typeof fetchLiveMarketData === 'function') {
+            fetchLiveMarketData();
+          }
         } else if (target === 'pomodoro') {
           if (typeof renderPomoHistoryChart === 'function') renderPomoHistoryChart();
           if (typeof updatePomoUI === 'function') updatePomoUI();

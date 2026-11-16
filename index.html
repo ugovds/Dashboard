@@ -522,9 +522,12 @@
                           <span id="dash-portfolio-sub-title">Performance globale &amp; Versements DCA</span>
                         </div>
                       </div>
-                      <button type="button" class="dash-card-link-btn" data-deck-view="system" title="Ouvrir le terminal marchés &amp; portefeuille">
-                        Terminal Marchés <i class="fa-solid fa-arrow-right"></i>
-                      </button>
+                      <div class="dash-card-top-actions">
+                        <span id="dash-portfolio-last-update" class="dash-portfolio-last-update"></span>
+                        <button type="button" class="dash-card-link-btn" data-deck-view="system" title="Ouvrir le terminal marchés &amp; portefeuille">
+                          Terminal Marchés <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                      </div>
                     </div>
 
                     <!-- Barre de valorisation & Sélecteur d'horizon temporel -->
@@ -1490,6 +1493,21 @@
                     </div>
                   </div>
 
+                  <!-- BANNIÈRE D'ERREUR COTATIONS BOURSIÈRES -->
+                  <div id="market-error-banner" class="market-error-banner" hidden style="display: none;">
+                    <div class="market-error-content">
+                      <i class="fa-solid fa-triangle-exclamation"></i>
+                      <div class="market-error-text">
+                        <strong>Impossible de charger les cotations en direct.</strong>
+                        <span>Vérifiez que le serveur local <code>./runner.py</code> est lancé pour alimenter les flux réels.</span>
+                      </div>
+                    </div>
+                    <button type="button" id="market-retry-btn" class="market-btn-primary">
+                      <i class="fa-solid fa-rotate-right"></i>
+                      <span>Réessayer</span>
+                    </button>
+                  </div>
+
                   <!-- 2. SECTION HAUT : WATCHLIST EN 2 COLONNES (GAUCHE: ACTIFS & INFOS, DROITE: GRAPHIQUE CORRESPONDANT) -->
                   <section class="watchlist-split-section">
                     <!-- COLONNE GAUCHE : LISTE DES ACTIONS & INFOS -->
@@ -1502,6 +1520,7 @@
                             <span class="watchlist-count-badge" id="watchlist-count-badge">--</span>
                           </div>
                           <div class="watchlist-quick-actions">
+                            <span id="market-last-update-text" class="market-last-update-text"><i class="fa-solid fa-circle"></i> Actualisation...</span>
                             <button type="button" id="market-config-toggle-btn" class="market-btn-secondary" title="Personnaliser les actifs et la liste">
                               <i class="fa-solid fa-sliders"></i>
                               <span>Personnaliser</span>

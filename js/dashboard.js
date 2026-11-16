@@ -308,8 +308,7 @@
       const baseVal = summary.totalValue / (1 + (summary.totalChange24hPct || 0.76) / 100);
       for (let i = 0; i < count; i++) {
         const t = i / (count - 1);
-        const wave = Math.sin(t * Math.PI * 2.2) * (summary.totalValue * 0.0035);
-        const v = baseVal + (summary.totalValue - baseVal) * t + wave;
+        const v = baseVal + (summary.totalValue - baseVal) * t;
         pts.push({
           value: Number(v.toFixed(2)),
           label: i === 0 ? 'Début' : i === count - 1 ? 'Direct' : `T-${count - 1 - i}`,
@@ -335,6 +334,11 @@
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       })} €`;
+    }
+
+    const subTitleEl = document.getElementById('dash-portfolio-sub-title');
+    if (subTitleEl) {
+      subTitleEl.textContent = 'Performance globale & Versements DCA';
     }
 
     // 2. Badge de variation
@@ -479,21 +483,46 @@
       nextDcaStr = `${dcaInfo.dateStr} (J-${dcaInfo.daysRemaining}) • +${dcaInfo.monthlyTotal} €`;
     }
 
+    let holdingsHtml = '';
+    if (Array.isArray(summary.holdings) && summary.holdings.length) {
+      holdingsHtml = `
+        <div class="dash-port-holdings-strip">
+          ${summary.holdings.map((h) => {
+            const isUp = (h.change24hPct || 0) >= 0;
+            const sign = isUp ? '+' : '';
+            const priceFormatted = h.id === 'nvda'
+              ? `${(h.priceOriginal || h.priceEur).toFixed(2)} $`
+              : `${h.priceEur.toFixed(2)} €`;
+            return `
+              <span class="dash-port-holding-pill" title="${h.name} : ${h.shares} part(s) valorisées à ${h.totalEur.toFixed(2)} €">
+                <span class="dash-pill-sym">${h.shortName || h.id.toUpperCase()}</span>
+                <span class="dash-pill-val">${priceFormatted}</span>
+                <span class="dash-pill-chg ${isUp ? 'up' : 'down'}">${sign}${(h.change24hPct || 0).toFixed(2)}%</span>
+              </span>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
     footer.innerHTML = `
-      <div class="dash-port-foot-stat">
-        <span class="dash-port-foot-lbl">Capital Investi</span>
-        <strong>${investedStr} €</strong>
+      <div class="dash-port-foot-stats-row">
+        <div class="dash-port-foot-stat">
+          <span class="dash-port-foot-lbl">Capital Investi</span>
+          <strong>${investedStr} €</strong>
+        </div>
+        <div class="dash-port-foot-stat">
+          <span class="dash-port-foot-lbl">Prochain DCA</span>
+          <strong><i class="fa-solid fa-arrows-rotate" style="color: #31e1f7;"></i> ${nextDcaStr}</strong>
+        </div>
+        <div class="dash-port-foot-stat">
+          <span class="dash-port-foot-lbl">Rendement Global</span>
+          <strong style="color: ${(summary.gainLatentPct ?? 0) >= 0 ? '#34d399' : '#f87171'}">
+            ${(summary.gainLatentPct ?? 0) >= 0 ? '+' : ''}${(summary.gainLatentPct ?? 0).toFixed(2)}%
+          </strong>
+        </div>
       </div>
-      <div class="dash-port-foot-stat">
-        <span class="dash-port-foot-lbl">Prochain DCA</span>
-        <strong><i class="fa-solid fa-arrows-rotate" style="color: #31e1f7;"></i> ${nextDcaStr}</strong>
-      </div>
-      <div class="dash-port-foot-stat">
-        <span class="dash-port-foot-lbl">Rendement Global</span>
-        <strong style="color: ${(summary.gainLatentPct ?? 0) >= 0 ? '#34d399' : '#f87171'}">
-          ${(summary.gainLatentPct ?? 0) >= 0 ? '+' : ''}${(summary.gainLatentPct ?? 0).toFixed(2)}%
-        </strong>
-      </div>
+      ${holdingsHtml}
     `;
   }
 
