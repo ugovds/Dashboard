@@ -26,22 +26,6 @@ function initWeatherFx() {
   // Synchroniser les boutons de contrôle
   updateFxControlsUI();
 
-  // Écouter le bouton dans la topbar
-  const topbarFxBtn = document.getElementById('weather-fx-toggle');
-  if (topbarFxBtn) {
-    topbarFxBtn.addEventListener('click', () => {
-      toggleWeatherFx(!isWeatherFxEnabled);
-    });
-  }
-
-  // Écouter le checkbox dans la modale météo
-  const modalFxCheck = document.getElementById('weather-modal-fx-check');
-  if (modalFxCheck) {
-    modalFxCheck.addEventListener('change', (e) => {
-      toggleWeatherFx(e.target.checked);
-    });
-  }
-
   // Mettre en pause si l'onglet est masqué pour économiser le CPU/GPU
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
@@ -85,17 +69,9 @@ function toggleWeatherFx(enabled) {
 }
 
 function updateFxControlsUI() {
-  const topbarFxBtn = document.getElementById('weather-fx-toggle');
-  if (topbarFxBtn) {
-    topbarFxBtn.classList.toggle('active', isWeatherFxEnabled);
-    topbarFxBtn.setAttribute('title', isWeatherFxEnabled 
-      ? 'Effets météo d\'arrière-plan (Actifs - Cliquer pour désactiver)' 
-      : 'Effets météo d\'arrière-plan (Inactifs - Cliquer pour activer)');
-  }
-
-  const modalFxCheck = document.getElementById('weather-modal-fx-check');
-  if (modalFxCheck) {
-    modalFxCheck.checked = isWeatherFxEnabled;
+  const fxCheck = document.getElementById('deck-weather-fx-toggle');
+  if (fxCheck) {
+    fxCheck.checked = isWeatherFxEnabled;
   }
 }
 

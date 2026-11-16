@@ -128,7 +128,6 @@ function initDeckViewSlider() {
           if (typeof initMarkets === 'function') initMarkets();
           if (typeof checkAndApplyScheduledDca === 'function') checkAndApplyScheduledDca();
           if (typeof renderPortfolioModule === 'function') renderPortfolioModule();
-          if (typeof renderIndicesMarquee === 'function') renderIndicesMarquee();
           if (typeof renderMarketCards === 'function') renderMarketCards();
           if (typeof renderHeroSpotlight === 'function' && typeof currentHeroAssetId !== 'undefined') {
             renderHeroSpotlight(currentHeroAssetId);
@@ -267,9 +266,6 @@ function switchHubTab(tabName) {
     if (typeof renderUserCustomThemes === 'function') renderUserCustomThemes();
     if (typeof updateAppearanceInputs === 'function') updateAppearanceInputs();
     if (typeof updateAppearanceLivePreview === 'function') updateAppearanceLivePreview();
-  } else if (tabName === 'clock') {
-    if (typeof updateClockControlsUI === 'function') updateClockControlsUI();
-    if (typeof updateClock === 'function') updateClock();
   } else if (tabName === 'widgets') {
     if (typeof applyWidgetVisibility === 'function') applyWidgetVisibility();
   } else if (tabName === 'feeds') {

@@ -488,25 +488,13 @@ function renderCustomFeedsModalList() {
 }
 
 function openFeedsModal() {
-  // Ouvre l'onglet Flux RSS des Paramètres ou la modale dédiée
+  // Ouvre l'onglet Flux RSS des Paramètres
   const configBtn = document.querySelector('[data-deck-view="customize"]');
   const feedsSubTab = document.querySelector('[data-hub-tab="feeds"]');
   if (configBtn && feedsSubTab) {
     configBtn.click();
     feedsSubTab.click();
-    return;
   }
-
-  const modal = document.getElementById('feeds-modal');
-  if (modal) {
-    renderCustomFeedsModalList();
-    modal.hidden = false;
-  }
-}
-
-function closeFeedsModal() {
-  const modal = document.getElementById('feeds-modal');
-  if (modal) modal.hidden = true;
 }
 
 /**
@@ -625,20 +613,10 @@ function initFeeds() {
     manageFeedsBtn.addEventListener('click', openFeedsModal);
   }
 
-  const feedsModalClose = document.getElementById('feeds-modal-close');
-  if (feedsModalClose) feedsModalClose.addEventListener('click', closeFeedsModal);
-
-  const feedsModal = document.getElementById('feeds-modal');
-  if (feedsModal) {
-    feedsModal.addEventListener('click', (e) => {
-      if (e.target === feedsModal) closeFeedsModal();
-    });
-  }
-
   // Formulaire d'ajout de flux dans les paramètres
   const addFeedForm = document.getElementById('add-feed-form');
-  const feedNameInput = document.getElementById('feed-name-input') || document.getElementById('new-feed-name');
-  const feedUrlInput = document.getElementById('feed-url-input') || document.getElementById('new-feed-url');
+  const feedNameInput = document.getElementById('feed-name-input');
+  const feedUrlInput = document.getElementById('feed-url-input');
 
   if (addFeedForm) {
     addFeedForm.addEventListener('submit', (e) => {

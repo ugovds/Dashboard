@@ -369,7 +369,7 @@ function renderRevisionHistory() {
  * Mise à jour globale de l'interface
  */
 function updatePomoUI() {
-  const display = document.getElementById('pomo-time') || document.getElementById('pomo-timer-display');
+  const display = document.getElementById('pomo-time');
   const status = document.getElementById('pomo-status');
   const substatus = document.getElementById('pomo-substatus');
   const progressBar = document.getElementById('pomo-progress-fill');
@@ -840,122 +840,8 @@ function renderMarkdownToHtml(md) {
 }
 window.renderMarkdownToHtml = renderMarkdownToHtml;
 
-function updateNotesStats(text) {
-  const statsInfoEl = document.getElementById('notes-stats-info');
-  const wordCountEl = document.getElementById('notes-word-count');
-  const charCountEl = document.getElementById('notes-char-count');
-
-  const safeText = typeof text === 'string' ? text : '';
-  const chars = safeText.length;
-  const words = safeText.trim() ? safeText.trim().split(/\s+/).length : 0;
-
-  if (statsInfoEl) {
-    statsInfoEl.textContent = `${words} ${words > 1 ? 'mots' : 'mot'} • ${chars} car.`;
-  }
-  if (wordCountEl) wordCountEl.textContent = words;
-  if (charCountEl) charCountEl.textContent = chars;
-}
-
-function initNotesWidget() {
-  if (document.querySelector('.studio-container') || window.initStudio) {
-    return;
-  }
-  const textarea = document.getElementById('notes-editor') || document.getElementById('notes-textarea');
-  const preview = document.getElementById('notes-preview');
-  const markdownToggleBtn = document.getElementById('notes-markdown-toggle');
-  const copyBtn = document.getElementById('notes-copy-btn') || document.getElementById('notes-btn-copy');
-  const downloadBtn = document.getElementById('notes-download-btn') || document.getElementById('notes-btn-download');
-  const clearBtn = document.getElementById('notes-clear-btn') || document.getElementById('notes-btn-clear');
-  const statusText = document.getElementById('notes-status-text');
-
-  if (!textarea) return;
-
-  let isPreviewMode = false;
-  const saved = localStorage.getItem('startpage_scratchpad_v2') || localStorage.getItem('startpage_scratchpad') || '';
-  textarea.value = saved;
-  updateNotesStats(saved);
-
-  let saveTimer = null;
-  textarea.addEventListener('input', () => {
-    updateNotesStats(textarea.value);
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      localStorage.setItem('startpage_scratchpad_v2', textarea.value);
-      localStorage.setItem('startpage_scratchpad', textarea.value);
-    }, 300);
-  });
-
-  // Bascule du mode aperçu Markdown
-  if (markdownToggleBtn && preview) {
-    markdownToggleBtn.addEventListener('click', () => {
-      isPreviewMode = !isPreviewMode;
-      if (isPreviewMode) {
-        preview.innerHTML = renderMarkdownToHtml(textarea.value);
-        textarea.hidden = true;
-        preview.hidden = false;
-        markdownToggleBtn.classList.add('active');
-        markdownToggleBtn.title = 'Revenir au mode Édition';
-        if (statusText) statusText.textContent = 'Mode Aperçu Markdown';
-      } else {
-        textarea.hidden = false;
-        preview.hidden = true;
-        markdownToggleBtn.classList.remove('active');
-        markdownToggleBtn.title = 'Basculer aperçu Markdown';
-        if (statusText) statusText.textContent = 'Sauvegarde locale active';
-        textarea.focus();
-      }
-    });
-  }
-
-  if (copyBtn) {
-    copyBtn.addEventListener('click', async () => {
-      if (!textarea.value.trim()) return;
-      try {
-        await navigator.clipboard.writeText(textarea.value);
-        if (typeof showToast === 'function') showToast('Notes copiées dans le presse-papier !', 'success');
-      } catch {
-        textarea.select();
-        document.execCommand('copy');
-        if (typeof showToast === 'function') showToast('Notes copiées !', 'success');
-      }
-    });
-  }
-
-  if (downloadBtn) {
-    downloadBtn.addEventListener('click', () => {
-      if (!textarea.value.trim()) {
-        if (typeof showToast === 'function') showToast('Le bloc-notes est vide.', 'info');
-        return;
-      }
-      const blob = new Blob([textarea.value], { type: 'text/markdown;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `notes_startpage_${new Date().toISOString().slice(0, 10)}.md`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    });
-  }
-
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-      if (!textarea.value.trim()) return;
-      if (confirm('Voulez-vous vraiment effacer l\'ensemble de vos notes ?')) {
-        textarea.value = '';
-        if (preview) preview.innerHTML = renderMarkdownToHtml('');
-        localStorage.removeItem('startpage_scratchpad_v2');
-        localStorage.removeItem('startpage_scratchpad');
-        updateNotesStats('');
-        if (typeof showToast === 'function') showToast('Notes effacées', 'info');
-      }
-    });
-  }
-}
-
 /* ========================================================
-   3. AMBIANCE SONORE & VISUALISEUR
+   2. AMBIANCE SONORE & VISUALISEUR
    ======================================================== */
 let ambientAudioCtx = null;
 let ambientGainNode = null;
@@ -1236,179 +1122,7 @@ function initAmbientWidget() {
 }
 
 /* ========================================================
-   4. MONITEUR SYSTÈME & MARCHÉS BOURSIERS
-   ======================================================== */
-const sessionStartTime = Date.now();
-const pingHistory = [];
-const MAX_PING_HISTORY = 12;
-
-function renderPingSparkline() {
-  const svg = document.getElementById('sys-ping-sparkline');
-  if (!svg || pingHistory.length < 2) return;
-
-  const w = 100;
-  const h = 24;
-  const pad = 2;
-
-  const min = Math.min(...pingHistory);
-  const max = Math.max(...pingHistory);
-  const range = max === min ? 1 : (max - min);
-
-  const points = pingHistory.map((val, idx) => {
-    const x = pad + (idx / (pingHistory.length - 1)) * (w - 2 * pad);
-    const y = h - pad - ((val - min) / range) * (h - 2 * pad);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  });
-
-  const linePath = `M ${points.join(' L ')}`;
-  const firstX = pad;
-  const lastX = (w - pad);
-  const areaPath = `M ${points.join(' L ')} L ${lastX},${h} L ${firstX},${h} Z`;
-
-  const lineEl = svg.querySelector('.ping-spark-line');
-  const areaEl = svg.querySelector('.ping-spark-area');
-
-  if (lineEl) lineEl.setAttribute('d', linePath);
-  if (areaEl) areaEl.setAttribute('d', areaPath);
-}
-
-async function checkNetworkPing() {
-  const valEl = document.getElementById('sys-ping-val');
-  const dotEl = document.getElementById('sys-ping-dot');
-  const stateEl = document.getElementById('sys-ping-state');
-  if (!valEl) return;
-
-  const start = performance.now();
-  let latency = 0;
-  let isOnline = navigator.onLine !== false;
-  let measurementSuccess = false;
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-    await fetch('https://1.1.1.1/cdn-cgi/trace', {
-      mode: 'no-cors',
-      cache: 'no-store',
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    latency = Math.max(8, Math.round(performance.now() - start));
-    measurementSuccess = true;
-  } catch {
-    measurementSuccess = false;
-  }
-
-  if (measurementSuccess) {
-    pingHistory.push(latency);
-    if (pingHistory.length > MAX_PING_HISTORY) pingHistory.shift();
-    renderPingSparkline();
-
-    valEl.textContent = `${latency} ms`;
-    if (dotEl) {
-      dotEl.className = 'telemetry-indicator ' + (latency < 80 ? 'good' : latency < 160 ? 'fair' : 'poor');
-    }
-    if (stateEl) {
-      stateEl.textContent = latency < 80 ? 'Connexion excellente' : latency < 160 ? 'Connexion fluide' : 'Latence moyenne';
-    }
-  } else if (isOnline) {
-    pingHistory.push(28);
-    if (pingHistory.length > MAX_PING_HISTORY) pingHistory.shift();
-    renderPingSparkline();
-
-    valEl.textContent = 'En ligne';
-    if (dotEl) dotEl.className = 'telemetry-indicator good';
-    if (stateEl) stateEl.textContent = 'Connecté (Ping non mesurable)';
-  } else {
-    valEl.textContent = 'Hors-ligne';
-    if (dotEl) dotEl.className = 'telemetry-indicator poor';
-    if (stateEl) stateEl.textContent = 'Vérifiez le réseau';
-  }
-}
-
-async function initBatteryMonitor() {
-  const valEl = document.getElementById('sys-bat-val');
-  const iconEl = document.getElementById('sys-bat-icon');
-  const stateEl = document.getElementById('sys-bat-state');
-  const labelEl = document.getElementById('sys-power-label');
-  if (!valEl) return;
-
-  let hasRealBattery = false;
-
-  if (typeof navigator.getBattery === 'function') {
-    try {
-      const bat = await navigator.getBattery();
-      if (bat && typeof bat.level === 'number' && !isNaN(bat.level)) {
-        hasRealBattery = true;
-        const updateBat = () => {
-          const pct = Math.round(bat.level * 100);
-          valEl.textContent = `${pct}%`;
-          if (labelEl) labelEl.innerHTML = '<i class="fa-solid fa-battery-half"></i> Batterie';
-          if (stateEl) {
-            stateEl.textContent = bat.charging ? 'En charge (Secteur)' : 'Sur batterie';
-          }
-          if (iconEl) {
-            if (bat.charging) {
-              iconEl.className = 'fa-solid fa-bolt telemetry-bat-icon charging';
-            } else if (pct > 75) {
-              iconEl.className = 'fa-solid fa-battery-full telemetry-bat-icon';
-            } else if (pct > 40) {
-              iconEl.className = 'fa-solid fa-battery-half telemetry-bat-icon';
-            } else {
-              iconEl.className = 'fa-solid fa-battery-quarter telemetry-bat-icon low';
-            }
-          }
-        };
-        updateBat();
-        bat.addEventListener('levelchange', updateBat);
-        bat.addEventListener('chargingchange', updateBat);
-        return;
-      }
-    } catch {
-      hasRealBattery = false;
-    }
-  }
-
-  // Si pas de batterie disponible (PC Tour Fixe, Linux, Firefox sans API batterie) :
-  // On adapte élégamment pour afficher l'alimentation secteur fiable et propre
-  if (labelEl) labelEl.innerHTML = '<i class="fa-solid fa-plug"></i> Alimentation';
-  if (iconEl) iconEl.className = 'fa-solid fa-plug telemetry-bat-icon ac-power';
-  valEl.textContent = 'Secteur AC';
-  const cores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Cores` : 'Station PC';
-  if (stateEl) stateEl.textContent = `PC Fixe • ${cores} • 100% Stable`;
-}
-
-function updateHardwareInfo() {
-  const hwVal = document.getElementById('sys-hardware-val');
-  const hwSub = document.getElementById('sys-hardware-sub');
-  if (!hwVal) return;
-
-  const cores = navigator.hardwareConcurrency || 8;
-  hwVal.textContent = `${cores} Cores CPU`;
-  const ram = navigator.deviceMemory ? `${navigator.deviceMemory} Go RAM` : 'Système 64-bit';
-  if (hwSub) hwSub.textContent = `${ram} • Multitâche fluide`;
-}
-
-function updateSessionUptime() {
-  const uptimeEl = document.getElementById('sys-uptime-val');
-  if (!uptimeEl) return;
-
-  const diffSec = Math.floor((Date.now() - sessionStartTime) / 1000);
-  const h = String(Math.floor(diffSec / 3600)).padStart(2, '0');
-  const m = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
-  const s = String(diffSec % 60).padStart(2, '0');
-
-  uptimeEl.textContent = diffSec >= 3600 ? `${h}h ${m}m` : `${m}m ${s}s`;
-}
-
-function initSystemWidget() {
-  if (typeof initMarkets === 'function') {
-    initMarkets();
-  }
-}
-
-/* ========================================================
-   5. CITATIONS CYBERPUNK & MOTIVATION DEV
+   3. CITATIONS CYBERPUNK & MOTIVATION DEV
    ======================================================== */
 const CYBER_QUOTES = [
   { text: "The sky above the port was the color of television, tuned to a dead channel.", author: "William Gibson", source: "Neuromancer" },
@@ -1582,9 +1296,7 @@ function initWidgets() {
   applyWidgetVisibility();
 
   initPomodoroWidget();
-  initNotesWidget();
   initAmbientWidget();
-  initSystemWidget();
   initQuotesWidget();
 
   // Écouteurs dans le centre de personnalisation (onglet Widgets)

@@ -261,10 +261,6 @@
       })
       .join('');
 
-    // Mise à jour de la carte KPI et sous-titre
-    const kpiHistoryVal = document.getElementById('kpi-history-val');
-    if (kpiHistoryVal) kpiHistoryVal.textContent = `${list.length} récents`;
-
     const label = document.getElementById('dash-history-count-label');
     if (label) label.textContent = `${list.length} sites récents • Accès direct`;
   }
@@ -635,12 +631,6 @@
         <span class="dash-weather-chip"><i class="fa-solid fa-sun"></i> Indice UV ${uvIndex}</span>
       `;
     }
-
-    // Mise à jour de la carte KPI Météo en haut
-    const kpiWeatherVal = document.getElementById('kpi-weather-val');
-    const kpiWeatherSub = document.getElementById('kpi-weather-sub');
-    if (kpiWeatherVal) kpiWeatherVal.textContent = `${currentTemp}°C • ${conditionDesc}`;
-    if (kpiWeatherSub) kpiWeatherSub.textContent = `${cityName.split(',')[0]} • Ressenti ${feelsLike}°C`;
 
     // Dessin du graphique dual SVG (Températures + Barres de précipitations)
     drawDualWeatherChart(hourlyList);
@@ -1183,22 +1173,6 @@
         fastInput.placeholder = "+ Ajouter une tâche rapide... (Entrée)";
       }
     }
-
-    // 6. Mise à jour de la carte KPI Agenda
-    const pendingCount = allTodos.filter((t) => !t.done).length;
-    const urgentCount = allTodos.filter((t) => !t.done && t.priority === 'urgent').length;
-    const kpiAgendaVal = document.getElementById('kpi-agenda-val');
-    const kpiAgendaBadge = document.getElementById('kpi-agenda-badge');
-    const kpiAgendaSub = document.getElementById('kpi-agenda-sub');
-
-    if (kpiAgendaVal) kpiAgendaVal.textContent = `${pendingCount} à faire`;
-    if (kpiAgendaBadge) {
-      kpiAgendaBadge.className = `dash-kpi-badge ${urgentCount > 0 ? 'down' : 'neutral'}`;
-      kpiAgendaBadge.textContent = urgentCount > 0 ? `${urgentCount} urgente${urgentCount > 1 ? 's' : ''}` : 'À jour';
-    }
-    if (kpiAgendaSub) {
-      kpiAgendaSub.textContent = pendingCount === 0 ? 'Toutes tâches faites' : `Prochaine échéance cette semaine`;
-    }
   }
 
   function toggleDashboardTodo(idx) {
@@ -1284,40 +1258,7 @@
   }
 
   /* ========================================================
-     5. HERO & HORLOGE DU DASHBOARD
-     ======================================================== */
-  function updateDashboardGreeting() {
-    const greetingEl = document.getElementById('dash-greeting-label');
-    const timeEl = document.getElementById('dash-tele-time');
-    const dateEl = document.getElementById('dash-tele-date');
-
-    const now = new Date();
-    const hours = now.getHours();
-
-    let greeting = 'Bonjour';
-    if (hours >= 12 && hours < 18) greeting = 'Bon après-midi';
-    else if (hours >= 18 || hours < 5) greeting = 'Bonsoir';
-
-    if (greetingEl) greetingEl.textContent = `${greeting}, Commandant 👋`;
-
-    if (timeEl) {
-      const hh = String(hours).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      timeEl.textContent = `${hh}:${mm}`;
-    }
-
-    if (dateEl) {
-      const formatted = now.toLocaleDateString('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long'
-      });
-      dateEl.textContent = formatted.charAt(0).toUpperCase() + formatted.slice(1);
-    }
-  }
-
-  /* ========================================================
-     6. ATTACHEMENT DES ÉVÉNEMENTS UTILISATEURS
+     5. ATTACHEMENT DES ÉVÉNEMENTS UTILISATEURS
      ======================================================== */
   let dashboardEventsAttached = false;
 
@@ -1446,16 +1387,12 @@
         }
       });
     }
-
-    // 9. Horloge en direct toutes les 30s
-    setInterval(updateDashboardGreeting, 30000);
   }
 
   /* ========================================================
-     7. INITIALISATION DU MODULE DASHBOARD
+     6. INITIALISATION DU MODULE DASHBOARD
      ======================================================== */
   function initOverviewDashboard() {
-    updateDashboardGreeting();
     renderVisitedSites();
     renderDashboardMarkets();
     renderDashboardWeather();

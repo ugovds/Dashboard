@@ -1,7 +1,3 @@
-/* ========================================================
-   css/dashboard.css - Layout Dashboard Moderne & Vues Plein Format
-   ======================================================== */
-
 /* --- ESPACE PRINCIPAL DE TRAVAIL --- */
 .dashboard-main-area {
   flex: 1;
@@ -153,7 +149,6 @@
   flex-direction: column;
 }
 
-/* Animation moderne avec flou subtil et translation */
 /* ========================================================
    BIBLIOTHÈQUE DE TRANSITIONS DE PAGES ("PAGE QUI DÉFILE")
    ======================================================== */
@@ -252,10 +247,6 @@
   animation: deckSlideFromBottom var(--page-anim-duration) var(--page-anim-easing) both;
 }
 
-.deck-slide-view.slide-enter-up {
-  animation: deckSlideFromTop var(--page-anim-duration) var(--page-anim-easing) both;
-}
-
 .deck-slide-view.zoom-enter {
   animation: deckZoomIn var(--page-anim-duration) cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -266,44 +257,6 @@
 
 .deck-slide-view.crossfade-enter {
   animation: deckCrossfade var(--page-anim-duration) ease both;
-}
-
-/* ========================================================
-   VUE 1 : ACCUEIL COCKPIT (4 QUADRANTS / BENTO MODERNE)
-   ======================================================== */
-.dashboard-overview-container {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(10px, 1.4vh, 18px);
-  height: 100%;
-  min-height: 0;
-  width: 100%;
-}
-
-/* Zone haute de l'accueil : Omnibox moderne flottante */
-.dashboard-search-hero {
-  flex-shrink: 0;
-  width: 100%;
-  max-width: 760px;
-  margin: 0 auto;
-}
-
-.dashboard-search-hero .search-box {
-  padding: 0.65rem 1.2rem;
-  border-radius: 99px;
-  background: rgba(14, 18, 28, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-/* Corps de l'accueil : Les 4 Quadrants occupant 100% de la hauteur et largeur de l'écran */
-.dashboard-overview-body {
-  flex: 1 1 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  height: 100%;
-  width: 100%;
 }
 
 .overview-categories-section {
@@ -437,14 +390,6 @@
   overflow-x: hidden;
 }
 
-.weather-full-view .weather-deck-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-
 /* ========================================================
    VUE 4 : ACTUALITÉS / FEEDS (Grid Spacieuse)
    ======================================================== */
@@ -487,16 +432,6 @@
   backdrop-filter: blur(20px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
   overflow-y: auto;
-}
-
-.system-full-view .crypto-ticker-cards.markets-grid,
-.markets-full-view .crypto-ticker-cards.markets-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)) !important;
-  gap: clamp(14px, 1.8vh, 22px) !important;
-  max-height: none !important;
-  height: auto !important;
-  overflow: visible !important;
 }
 
 /* ========================================================
@@ -933,13 +868,16 @@
 .revision-cockpit-col::-webkit-scrollbar {
   width: 6px;
 }
+
 .revision-cockpit-col::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .revision-cockpit-col::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
   border-radius: 99px;
 }
+
 .revision-cockpit-col::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.22);
 }
@@ -1192,59 +1130,10 @@
 .revision-history-list::-webkit-scrollbar {
   width: 5px;
 }
+
 .revision-history-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
   border-radius: 99px;
-}
-
-.history-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.45rem 0.65rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  font-size: 0.74rem;
-  transition: all 0.2s ease;
-}
-
-.history-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-.history-subj {
-  font-weight: 700;
-  color: #ffffff;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.history-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-
-.history-dur-badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
-  color: var(--accent-primary);
-  background: rgba(var(--accent-primary-rgb, 167, 139, 250), 0.12);
-  padding: 0.12rem 0.45rem;
-  border-radius: 6px;
-}
-
-.history-empty-msg {
-  text-align: center;
-  font-size: 0.74rem;
-  color: var(--text-muted);
-  padding: 1rem 0.5rem;
-  font-style: italic;
 }
 
 /* Ambiance d'étude */
@@ -1312,12 +1201,6 @@
   transition: all 0.2s ease;
 }
 
-.ambient-play-toggle.playing {
-  background: #10b981;
-  color: #0c0f17;
-  border-color: #10b981;
-}
-
 .ambient-play-toggle * {
   pointer-events: none;
 }
@@ -1381,42 +1264,9 @@
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
-.notes-full-view .notes-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
 .notes-full-view .notes-editor {
   flex: 1;
   min-height: 280px;
-}
-
-/* ========================================================
-   VUE 8 : AMBIANCE SONORE LO-FI
-   ======================================================== */
-.ambient-full-view {
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 18px;
-  padding: 2rem;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-}
-
-.ambient-full-view .ambient-panel {
-  max-width: 680px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
 }
 
 /* ========================================================
@@ -1483,10 +1333,6 @@
   box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
   box-sizing: border-box;
 }
-
-/* ========================================================
-   RESPONSIVE : 34" ULTRAWIDE, LAPTOPS & MOBILE VIEWPORT
-   ======================================================== */
 
 /* --- ÉCRANS GÉANTS / 34" ULTRAWIDE (>= 2200px) --- */
 @media (min-width: 2200px) {
@@ -1710,3 +1556,4 @@
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
+

@@ -2,17 +2,16 @@
  * sw.js - Service Worker pour Violet Startpage (Mode Hors-Ligne & Cache PWA)
  */
 
-const CACHE_NAME = 'violet-startpage-v6.0';
+const CACHE_NAME = 'violet-startpage-v7.0';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './css/style.css',
   './css/base.css',
   './css/sidebar.css',
   './css/dashboard.css',
   './css/dashboard-overview.css',
-  './css/clock.css',
+  './css/skeletons.css',
   './css/search.css',
   './css/bookmarks.css',
   './css/calendar.css',
@@ -33,7 +32,6 @@ const STATIC_ASSETS = [
   './images/glass.svg',
   './js/themes.js',
   './js/appearance.js',
-  './js/clock.js',
   './js/weather-fx.js',
   './js/weather.js',
   './js/calendar.js',
@@ -43,22 +41,12 @@ const STATIC_ASSETS = [
   './js/bookmarks.js',
   './js/markets.js',
   './js/skulpt.min.js',
-  './js/skulpt-stdlib.js',
   './js/notes-studio.js',
   './js/widgets.js',
   './js/custom-hub.js',
   './js/command-palette.js',
   './js/shortcuts.js',
   './js/dashboard.js',
-  './js/app.js',
-  './js/tasks.js',
-  './js/search.js',
-  './js/feeds.js',
-  './js/bookmarks.js',
-  './js/widgets.js',
-  './js/custom-hub.js',
-  './js/command-palette.js',
-  './js/shortcuts.js',
   './js/app.js',
   './images/gif.gif',
   './images/gif2.gif',

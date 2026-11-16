@@ -384,11 +384,6 @@
   color: #34d399;
 }
 
-/* --- 2. BANDEAU KPI SUPPRIMÉ (ZÉRO ENCOMBREMENT) --- */
-.dash-kpi-row {
-  display: none !important;
-}
-
 /* --- 3. BENTO GRID DU DASHBOARD (2 COLONNES SYMÉTRIQUES SANS DÉFILEMENT) --- */
 .dash-grid-layout {
   display: grid;

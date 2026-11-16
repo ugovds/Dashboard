@@ -152,7 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof initThemes === 'function') initThemes();
   if (typeof initAppearance === 'function') initAppearance();
   if (typeof initBookmarks === 'function') initBookmarks();
-  if (typeof initClock === 'function') initClock();
   if (typeof initTasks === 'function') initTasks();
   if (typeof initCalendar === 'function') initCalendar();
   if (typeof initSearch === 'function') initSearch();

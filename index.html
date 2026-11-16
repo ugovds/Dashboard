@@ -49,7 +49,6 @@
     <link rel="stylesheet" href="css/dashboard.css?v=4.3" />
     <link rel="stylesheet" href="css/dashboard-overview.css?v=1.1" />
     <link rel="stylesheet" href="css/skeletons.css?v=1.0" />
-    <link rel="stylesheet" href="css/clock.css?v=3.0" />
     <link rel="stylesheet" href="css/search.css?v=3.0" />
     <link rel="stylesheet" href="css/bookmarks.css?v=3.1" />
     <link rel="stylesheet" href="css/calendar.css?v=3.1" />
@@ -560,61 +559,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Horloge masquée (conservée sans affichage pour réactivation éventuelle sans casser les scripts) -->
-            <aside class="overview-left-col" id="overview-clock-col" style="display: none !important;" aria-hidden="true">
-              <div class="left-clock-card font-inter clock-style-editorial clock-size-medium" id="left-clock-card">
-                <div class="clock-card-top">
-                  <button type="button" id="clock-tz-badge" class="clock-tz-pill"><i class="fa-solid fa-globe"></i> LOCAL • PARIS</button>
-                  <button type="button" id="clock-mode-toggle" class="clock-tz-pill clock-mode-pill"><i id="clock-mode-icon" class="fa-solid fa-clock"></i> <span id="clock-mode-label">Horloge</span></button>
-                </div>
-                <span id="clock-greeting" class="clock-greeting">Bonjour</span>
-                <div class="left-clock-display" id="left-clock-display">
-                  <div class="time-digits-box">
-                    <span id="time" class="left-time-main">00:00</span>
-                    <span id="clock-ms-tick" class="clock-ms-tick" style="display: none;">.00</span>
-                  </div>
-                  <span id="clock-ampm-pill" class="ampm-pill" hidden>AM</span>
-                </div>
-                <div id="clock-flip-wrap" class="clock-flip-wrap" style="display: none;">
-                  <div class="flip-unit"><span class="flip-digit" id="flip-h">12</span></div>
-                  <span class="flip-sep">:</span>
-                  <div class="flip-unit"><span class="flip-digit" id="flip-m">30</span></div>
-                  <span class="flip-sep" id="flip-sec-sep" style="display:none;">:</span>
-                  <div class="flip-unit" id="flip-sec-unit" style="display:none;"><span class="flip-digit" id="flip-s">00</span></div>
-                </div>
-                <div id="clock-analog-wrap" class="clock-analog-wrap" style="display: none;">
-                  <svg class="clock-analog-svg" viewBox="0 0 200 200">
-                    <circle class="analog-face" cx="100" cy="100" r="92" />
-                    <line class="analog-tick major" x1="100" y1="14" x2="100" y2="26" />
-                    <line id="analog-hour-hand" class="analog-hand-hour" x1="100" y1="100" x2="100" y2="52" />
-                    <line id="analog-min-hand" class="analog-hand-min" x1="100" y1="100" x2="100" y2="34" />
-                    <line id="analog-sec-hand" class="analog-hand-sec" x1="100" y1="114" x2="100" y2="24" />
-                    <circle class="analog-center-dot" cx="100" cy="100" r="4.5" />
-                  </svg>
-                </div>
-                <div class="left-clock-telemetry">
-                  <div id="date" class="left-date-main">Chargement...</div>
-                  <div class="clock-telemetry-chips">
-                    <span class="chrono-chip" id="clock-week-chip"><i class="fa-solid fa-calendar-week"></i><span id="clock-week-text">Sem. --</span></span>
-                    <span class="chrono-chip" id="clock-day-chip"><i class="fa-solid fa-hourglass-half"></i><span id="clock-day-text">Jour --/365</span></span>
-                    <span class="chrono-chip solar-chip" id="clock-solar-chip"><i id="clock-solar-icon" class="fa-solid fa-sun"></i><span id="clock-solar-text">Diurne</span></span>
-                  </div>
-                </div>
-                <div id="day-progress-wrap" class="day-progress-wrap">
-                  <div class="day-progress-header">
-                    <span class="day-progress-title"><i class="fa-solid fa-circle-notch"></i> Progression Journée</span>
-                    <div class="day-progress-stats">
-                      <span id="day-progress-pct" class="progress-pct-bold">0%</span>
-                      <span id="day-progress-remaining" class="progress-remaining-sub">(12h 00m restants)</span>
-                    </div>
-                  </div>
-                  <div class="day-progress-track">
-                    <div id="day-progress-fill" class="day-progress-fill" style="width: 0%;"><span class="progress-glow-head"></span></div>
-                  </div>
-                </div>
-              </div>
-            </aside>
           </div>
 
           <!-- ==============================================
@@ -2834,9 +2778,6 @@
                     <button type="button" class="hub-tab-btn config-subtab-btn active" data-hub-tab="appearance">
                       <i class="fa-solid fa-palette"></i> Apparence
                     </button>
-                    <button type="button" class="hub-tab-btn config-subtab-btn" data-hub-tab="clock">
-                      <i class="fa-solid fa-clock"></i> Horloge
-                    </button>
                     <button type="button" class="hub-tab-btn config-subtab-btn" data-hub-tab="shortcuts">
                       <i class="fa-solid fa-link"></i> Signets
                     </button>
@@ -3050,177 +2991,6 @@
                     <div class="hub-panel-footer">
                       <button type="button" id="appearance-reset-btn" class="modal-btn danger">
                         Réinitialiser l'apparence par défaut
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- 2. SOUS-ONGLET : HORLOGE & DATE -->
-                  <div id="hub-tab-clock" class="hub-tab-panel" hidden>
-                    <div class="hub-panel-header">
-                      <div>
-                        <h4>Horloge Cyberdeck & Date</h4>
-                        <p class="panel-hint">Configurez la typographie, les styles, les options de la grande horloge de gauche avec aperçu en direct.</p>
-                      </div>
-                    </div>
-
-                    <!-- 1. Choix de la police -->
-                    <div class="clock-section">
-                      <label class="section-label">Police de Caractères (Typography) :</label>
-                      <div class="clock-fonts-grid">
-                        <button type="button" class="clock-font-btn active" data-clock-font="jetbrains">
-                          <span class="font-sample font-jetbrains">12:34:56</span>
-                          <span class="font-name">JetBrains Mono</span>
-                          <span class="font-desc">Monospace Cyberpunk</span>
-                        </button>
-                        <button type="button" class="clock-font-btn" data-clock-font="orbitron">
-                          <span class="font-sample font-orbitron">12:34:56</span>
-                          <span class="font-name">Orbitron</span>
-                          <span class="font-desc">Futuriste HUD Sci-Fi</span>
-                        </button>
-                        <button type="button" class="clock-font-btn" data-clock-font="share-tech">
-                          <span class="font-sample font-share-tech">12:34:56</span>
-                          <span class="font-name">Share Tech Mono</span>
-                          <span class="font-desc">Terminal Hacker</span>
-                        </button>
-                        <button type="button" class="clock-font-btn" data-clock-font="vt323">
-                          <span class="font-sample font-vt323">12:34:56</span>
-                          <span class="font-name">VT323</span>
-                          <span class="font-desc">Cathodique 90s</span>
-                        </button>
-                        <button type="button" class="clock-font-btn" data-clock-font="inter">
-                          <span class="font-sample font-inter">12:34:56</span>
-                          <span class="font-name">Inter Clean</span>
-                          <span class="font-desc">Moderne Sans-Serif</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- 2. Style visuel du cadre -->
-                    <div class="clock-section">
-                      <label class="section-label">Style du Cadre & Design :</label>
-                      <div class="clock-styles-grid">
-                        <button type="button" class="clock-style-card-btn active" data-clock-style="editorial">
-                          <div class="style-icon-preview"><i class="fa-solid fa-feather"></i></div>
-                          <span class="style-title">Éditorial Pro</span>
-                          <span class="style-desc">Design épuré & salutation</span>
-                        </button>
-                        <button type="button" class="clock-style-card-btn" data-clock-style="flip">
-                          <div class="style-icon-preview"><i class="fa-solid fa-stopwatch"></i></div>
-                          <span class="style-title">Flip Clock</span>
-                          <span class="style-desc">Clapets rétro animés</span>
-                        </button>
-                        <button type="button" class="clock-style-card-btn" data-clock-style="analog">
-                          <div class="style-icon-preview"><i class="fa-regular fa-clock"></i></div>
-                          <span class="style-title">Analogique Suisse</span>
-                          <span class="style-desc">Cadran & trotteuse fluide</span>
-                        </button>
-                        <button type="button" class="clock-style-card-btn" data-clock-style="glass">
-                          <div class="style-icon-preview"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                          <span class="style-title">Verre Dépoli</span>
-                          <span class="style-desc">Design moderne & flou</span>
-                        </button>
-                        <button type="button" class="clock-style-card-btn" data-clock-style="minimal">
-                          <div class="style-icon-preview"><i class="fa-solid fa-minus"></i></div>
-                          <span class="style-title">Minimaliste</span>
-                          <span class="style-desc">Typographie pure</span>
-                        </button>
-                        <button type="button" class="clock-style-card-btn" data-clock-style="card">
-                          <div class="style-icon-preview"><i class="fa-solid fa-square"></i></div>
-                          <span class="style-title">Carte Élégante</span>
-                          <span class="style-desc">Surface contrastée</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- 3. Formats & Options -->
-                    <div class="clock-section clock-options-grid">
-                      <div class="clock-option-col">
-                        <label class="section-label">Options d'Affichage :</label>
-                        <div class="clock-toggles-list">
-                          <label class="fx-toggle-label">
-                            <span>Format 24 Heures (vs 12h AM/PM)</span>
-                            <input type="checkbox" id="clock-opt-24h" checked />
-                            <span class="switch-slider"></span>
-                          </label>
-                          <label class="fx-toggle-label">
-                            <span>Afficher les secondes (:SS)</span>
-                            <input type="checkbox" id="clock-opt-seconds" checked />
-                            <span class="switch-slider"></span>
-                          </label>
-                          <label class="fx-toggle-label">
-                            <span>Afficher la date complète</span>
-                            <input type="checkbox" id="clock-opt-date" checked />
-                            <span class="switch-slider"></span>
-                          </label>
-                          <label class="fx-toggle-label">
-                            <span>Barre de progression du jour (%)</span>
-                            <input type="checkbox" id="clock-opt-progress" checked />
-                            <span class="switch-slider"></span>
-                          </label>
-                          <label class="fx-toggle-label">
-                            <span>Numéro de semaine & jour annuel</span>
-                            <input type="checkbox" id="clock-opt-week" checked />
-                            <span class="switch-slider"></span>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div class="clock-option-col">
-                        <label class="section-label">Format de Date & Fuseau :</label>
-                        <div class="form-row">
-                          <label for="clock-date-format-select">Format de date :</label>
-                          <select id="clock-date-format-select" class="hub-select">
-                            <option value="text" selected>Texte français (mer. 4 nov.)</option>
-                            <option value="numeric">Numérique (04/11/2026)</option>
-                            <option value="iso">Format ISO (2026-11-04)</option>
-                          </select>
-                        </div>
-                        <div class="form-row">
-                          <label for="clock-timezone-select">Fuseau horaire :</label>
-                          <select id="clock-timezone-select" class="hub-select">
-                            <option value="local" selected>Local (Heure système)</option>
-                            <option value="tokyo">Tokyo (JST • UTC+9)</option>
-                            <option value="ny">New York (EST • UTC-5)</option>
-                            <option value="london">Londres (GMT • UTC+0)</option>
-                            <option value="utc">UTC (Universel Coordonné)</option>
-                          </select>
-                        </div>
-                        <div class="form-row">
-                          <label for="clock-size-select">Taille de l'horloge :</label>
-                          <select id="clock-size-select" class="hub-select">
-                            <option value="small">Compacte</option>
-                            <option value="medium" selected>Standard (Défaut)</option>
-                            <option value="large">Grande & Imposante</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- 4. Mode Compte à Rebours (Countdown HUD) -->
-                    <div class="clock-section">
-                      <label class="section-label"><i class="fa-solid fa-hourglass-start"></i> Mode Compte à Rebours (Countdown HUD) :</label>
-                      <div class="clock-countdown-config-card">
-                        <label class="fx-toggle-label">
-                          <span>Activer l'affichage compte à rebours sur l'horloge</span>
-                          <input type="checkbox" id="clock-opt-countdown" />
-                          <span class="switch-slider"></span>
-                        </label>
-                        <div class="clock-countdown-inputs-grid">
-                          <div class="form-row">
-                            <label for="clock-countdown-target">Heure cible (HH:MM ou Date ISO) :</label>
-                            <input type="text" id="clock-countdown-target" placeholder="Ex: 18:00 ou 2026-12-31T23:59" class="config-input" />
-                          </div>
-                          <div class="form-row">
-                            <label for="clock-countdown-label">Libellé de l'objectif :</label>
-                            <input type="text" id="clock-countdown-label" placeholder="Ex: Fin de journée, Rendu projet..." class="config-input" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="hub-panel-footer">
-                      <button type="button" id="clock-reset-btn" class="modal-btn secondary">
-                        Réinitialiser l'horloge par défaut
                       </button>
                     </div>
                   </div>
@@ -3734,7 +3504,6 @@
     <!-- Scripts JavaScript modulaires différés (téléchargement parallèle sans bloquer le parsing DOM) -->
     <script defer src="js/themes.js?v=5.2"></script>
     <script defer src="js/appearance.js?v=5.0"></script>
-    <script defer src="js/clock.js?v=5.0"></script>
     <script defer src="js/weather-fx.js?v=5.0"></script>
     <script defer src="js/weather.js?v=5.0"></script>
     <script defer src="js/calendar.js?v=5.0"></script>
@@ -3748,7 +3517,6 @@
     <script defer src="js/command-palette.js?v=5.0"></script>
     <script defer src="js/shortcuts.js?v=5.0"></script>
     <script defer src="js/skulpt.min.js"></script>
-    <script defer src="js/skulpt-stdlib.js"></script>
     <script defer src="js/notes-studio.js?v=5.0"></script>
     <script defer src="js/dashboard.js?v=5.0"></script>
     <script defer src="js/app.js?v=5.1"></script>

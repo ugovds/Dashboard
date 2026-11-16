@@ -612,19 +612,6 @@ const DEFAULT_MARKET_ASSETS = [
   }
 ];
 
-const GLOBAL_INDICES = [
-  { name: 'S&P 500', symbol: 'FOREXCOM:SPXUSD', val: '5 864,67', change: '+0.41%', up: true },
-  { name: 'Nasdaq 100', symbol: 'FOREXCOM:NSXUSD', val: '20 450,12', change: '+0.85%', up: true },
-  { name: 'Dow Jones', symbol: 'TVC:DJI', val: '42 210,50', change: '+0.18%', up: true },
-  { name: 'CAC 40', symbol: 'EURONEXT:PX1', val: '7 480,25', change: '+0.65%', up: true },
-  { name: 'Euro Stoxx 50', symbol: 'INDEX:SX5E', val: '4 982,10', change: '+0.32%', up: true },
-  { name: 'Nikkei 225', symbol: 'TVC:NI225', val: '39 277,40', change: '+1.15%', up: true },
-  { name: 'Bitcoin', symbol: 'BINANCE:BTCUSDT', val: '74 117 $', change: '+3.45%', up: true },
-  { name: 'Or / Gold', symbol: 'TVC:GOLD', val: '2 735,80 $', change: '+0.42%', up: true },
-  { name: 'Pétrole Brent', symbol: 'TVC:UKOIL', val: '74,20 $', change: '-0.75%', up: false },
-  { name: 'EUR / USD', symbol: 'FX:EURUSD', val: '1.0852 $', change: '+0.12%', up: true }
-];
-
 let marketAssets = loadMarketAssets();
 let currentMarketCategory = 'all';
 let currentMarketSearch = '';
@@ -1714,42 +1701,6 @@ function generateSparklinePaths(basePrice, changePct, isUp) {
   return { linePath, areaPath };
 }
 
-/**
- * Rendu du bandeau des indices boursiers mondiaux
- */
-function renderIndicesMarquee() {
-  const marqueeTrack = document.getElementById('markets-indices-marquee');
-  if (!marqueeTrack) return;
-
-  marqueeTrack.innerHTML = GLOBAL_INDICES.map((idx) => `
-    <div class="market-index-pill" data-index-sym="${idx.symbol}" title="Cliquer pour afficher la courbe de ${idx.name}">
-      <span class="index-pill-name">${idx.name}</span>
-      <span class="index-pill-val">${idx.val}</span>
-      <span class="index-pill-change ${idx.up ? 'up' : 'down'}">${idx.change}</span>
-    </div>
-  `).join('');
-
-  marqueeTrack.querySelectorAll('.market-index-pill').forEach((pill) => {
-    pill.addEventListener('click', () => {
-      const sym = pill.dataset.indexSym;
-      const foundAsset = marketAssets.find((a) => a.symbol === sym) || {
-        id: `idx_${Date.now()}`,
-        name: pill.querySelector('.index-pill-name')?.textContent || 'Indice',
-        symbol: sym,
-        type: 'index',
-        basePrice: parseFloat(pill.querySelector('.index-pill-val')?.textContent?.replace(/\s/g, '').replace(',', '.')) || 5000,
-        baseChange: parseFloat(pill.querySelector('.index-pill-change')?.textContent?.replace('%', '')) || 0.45,
-        unit: 'pts',
-        exchange: 'Marché Mondial',
-        enabled: true
-      };
-      openChartModal(foundAsset);
-    });
-  });
-}
-
-// Mode d'affichage actif pour la Watchlist ('list' par défaut, ou 'grid')
-let currentWatchlistViewMode = 'list';
 // Actif actuellement mis en vedette dans le Hero Spotlight
 let currentHeroAssetId = 'nvda';
 // Points du graphique Hero pour le tracker
@@ -2068,201 +2019,6 @@ function setupHeroChartInteractions(asset) {
   container.onmouseleave = onLeave;
   container.ontouchmove = onPointer;
   container.ontouchend = onLeave;
-}
-
-/**
- * Rendu du Bento BAROMÈTRE & INDICES MONDIAUX
- */
-function renderMarketBarometer() {
-  const listContainer = document.getElementById('barometer-indices-list');
-  const sentimentTag = document.getElementById('market-sentiment-tag');
-  const fillBar = document.getElementById('barometer-fill-bar');
-  const scoreText = document.getElementById('barometer-score-text');
-
-  const enabledAssets = marketAssets.filter((a) => a.enabled);
-  const posCount = enabledAssets.filter((a) => a.baseChange >= 0).length;
-  const ratio = enabledAssets.length ? Math.round((posCount / enabledAssets.length) * 100) : 70;
-
-  if (fillBar) fillBar.style.width = `${ratio}%`;
-  if (sentimentTag) sentimentTag.textContent = `${ratio}% Haussier`;
-  if (scoreText) {
-    if (ratio >= 65) scoreText.textContent = 'Climat Positif / Bullish 🟢';
-    else if (ratio <= 40) scoreText.textContent = 'Climat Prudent / Bearish 🔴';
-    else scoreText.textContent = 'Marché Neutre / Équilibré 🟡';
-  }
-
-  if (!listContainer) return;
-
-  const pillars = [
-    marketAssets.find((a) => a.id === 'sp500') || { id: 'sp500', name: 'S&P 500', symbol: 'US500', basePrice: 5864.20, baseChange: 0.65, unit: 'pts' },
-    marketAssets.find((a) => a.id === 'nasdaq100') || { id: 'nasdaq100', name: 'Nasdaq 100', symbol: 'NDX', basePrice: 20680.50, baseChange: 0.95, unit: 'pts' },
-    marketAssets.find((a) => a.id === 'cac40') || { id: 'cac40', name: 'CAC 40', symbol: 'PX1', basePrice: 7420.30, baseChange: -0.22, unit: 'pts' },
-    marketAssets.find((a) => a.id === 'dax40') || { id: 'dax40', name: 'DAX 40', symbol: 'DAX', basePrice: 19210.80, baseChange: 0.38, unit: 'pts' }
-  ];
-
-  listContainer.innerHTML = pillars.map((idx) => {
-    const isUp = idx.baseChange >= 0;
-    const sign = isUp ? '+' : '';
-    const { linePath } = generateSparklinePaths(idx.basePrice, idx.baseChange, isUp);
-    return `
-      <div class="barometer-index-row" data-asset-id="${idx.id}" title="${idx.name} - Cliquer pour ouvrir la courbe 24h">
-        <span class="b-idx-name">${idx.name}</span>
-        <svg viewBox="0 0 100 36" class="b-idx-spark" preserveAspectRatio="none">
-          <path d="${linePath}" fill="none" stroke="${isUp ? '#10b981' : '#ef4444'}" stroke-width="2.5" />
-        </svg>
-        <div class="b-idx-price-group">
-          <span class="b-idx-val">${idx.basePrice.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
-          <span class="b-idx-chg ${isUp ? 'up' : 'down'}">${sign}${idx.baseChange.toFixed(2)}%</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  listContainer.querySelectorAll('.barometer-index-row').forEach((row) => {
-    row.addEventListener('click', () => {
-      const id = row.dataset.assetId;
-      const asset = marketAssets.find((a) => a.id === id);
-      if (asset) openChartModal(asset);
-    });
-  });
-}
-
-/**
- * Rendu du Bento TOP MOVERS DU JOUR (Hausses vs Replis)
- */
-function renderMarketMovers() {
-  const gainersList = document.getElementById('movers-gainers-list');
-  const losersList = document.getElementById('movers-losers-list');
-  if (!gainersList || !losersList) return;
-
-  const valid = marketAssets.filter((a) => a.enabled && typeof a.baseChange === 'number');
-  const sortedGainers = [...valid].sort((a, b) => b.baseChange - a.baseChange).slice(0, 3);
-  const sortedLosers = [...valid].sort((a, b) => a.baseChange - b.baseChange).slice(0, 3);
-
-  function renderRows(arr, isGainer) {
-    return arr.map((item) => {
-      const sign = item.baseChange >= 0 ? '+' : '';
-      const sym = item.symbol.includes(':') ? item.symbol.split(':')[1] : item.symbol;
-      return `
-        <div class="mover-item-row" data-asset-id="${item.id}" title="${item.name} - Voir la courbe 24h">
-          <div class="mover-sym-name">
-            <span class="mover-sym">${sym}</span>
-            <span class="mover-name">${item.name}</span>
-          </div>
-          <div class="mover-val-chg">
-            <span class="mover-price">${item.basePrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${item.unit || '$'}</span>
-            <span class="mover-badge ${isGainer ? 'up' : 'down'}">${sign}${item.baseChange.toFixed(2)}%</span>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  gainersList.innerHTML = renderRows(sortedGainers, true);
-  losersList.innerHTML = renderRows(sortedLosers, false);
-
-  [gainersList, losersList].forEach((container) => {
-    container.querySelectorAll('.mover-item-row').forEach((row) => {
-      row.addEventListener('click', () => {
-        const id = row.dataset.assetId;
-        const asset = marketAssets.find((a) => a.id === id);
-        if (asset) openChartModal(asset);
-      });
-    });
-  });
-}
-
-/**
- * Rendu du Bento DEVISES (FOREX) & CRYPTO EN DIRECT + Convertisseur express
- */
-function renderForexCryptoModule() {
-  const container = document.getElementById('forex-crypto-rows');
-  if (!container) return;
-
-  const pairs = [
-    marketAssets.find((a) => a.id === 'eurusd') || { id: 'eurusd', symbol: 'EUR/USD', name: 'Euro / Dollar', basePrice: 1.0820, baseChange: 0.15, unit: '$' },
-    marketAssets.find((a) => a.id === 'eurgbp') || { id: 'eurgbp', symbol: 'EUR/GBP', name: 'Euro / Livre', basePrice: 0.8350, baseChange: -0.08, unit: '£' },
-    marketAssets.find((a) => a.id === 'btc') || { id: 'btc', symbol: 'BTC/USD', name: 'Bitcoin', basePrice: 88500, baseChange: 4.80, unit: '$' },
-    marketAssets.find((a) => a.id === 'eth') || { id: 'eth', symbol: 'ETH/USD', name: 'Ethereum', basePrice: 3180, baseChange: 3.20, unit: '$' }
-  ];
-
-  container.innerHTML = pairs.map((p) => {
-    const isUp = p.baseChange >= 0;
-    const sign = isUp ? '+' : '';
-    const sym = p.symbol.includes(':') ? p.symbol.split(':')[1] : p.symbol;
-    return `
-      <div class="fc-card-item" data-asset-id="${p.id}" title="${p.name} - Voir la courbe 24h">
-        <div class="fc-left">
-          <span class="fc-pair">${sym}</span>
-          <span class="fc-desc">${p.name}</span>
-        </div>
-        <div class="fc-right">
-          <span class="fc-rate">${p.basePrice.toLocaleString('fr-FR', { minimumFractionDigits: (p.type === 'forex' ? 4 : 2), maximumFractionDigits: (p.type === 'forex' ? 4 : 2) })} ${p.unit || ''}</span>
-          <span class="fc-chg ${isUp ? 'up' : 'down'}">${sign}${p.baseChange.toFixed(2)}%</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  container.querySelectorAll('.fc-card-item').forEach((item) => {
-    item.addEventListener('click', () => {
-      const id = item.dataset.assetId;
-      const asset = marketAssets.find((a) => a.id === id);
-      if (asset) openChartModal(asset);
-    });
-  });
-
-  updateQuickConverter();
-}
-
-/**
- * Calcule la conversion express (EUR vers USD et BTC)
- */
-function updateQuickConverter() {
-  const input = document.getElementById('quick-conv-amount');
-  const resUsd = document.getElementById('quick-conv-result');
-  const resBtc = document.getElementById('quick-conv-btc');
-  if (!input || !resUsd) return;
-
-  const eurAmount = parseFloat(input.value) || 100;
-  const eurusd = marketAssets.find((a) => a.id === 'eurusd')?.basePrice || 1.0820;
-  const btcPrice = marketAssets.find((a) => a.id === 'btc')?.basePrice || 88500;
-
-  const totalUsd = eurAmount * eurusd;
-  const totalBtc = totalUsd / btcPrice;
-
-  resUsd.textContent = `${totalUsd.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $`;
-  if (resBtc) resBtc.textContent = `~ ${totalBtc.toFixed(5)} BTC`;
-}
-
-/**
- * Calcule l'état d'ouverture des bourses (Paris & New York)
- */
-function updateMarketGlobalStatus() {
-  const statusEl = document.getElementById('market-status-text');
-  if (!statusEl) return;
-
-  const now = new Date();
-  const utcHour = now.getUTCHours();
-  const day = now.getUTCDay();
-
-  if (day === 0 || day === 6) {
-    statusEl.textContent = 'Bourses fermées (Week-end) • Crypto 24/7 active';
-    return;
-  }
-
-  const isEuronextOpen = utcHour >= 7 && utcHour < 15.5;
-  const isNyseOpen = utcHour >= 13.5 && utcHour < 20;
-
-  if (isNyseOpen && isEuronextOpen) {
-    statusEl.textContent = 'Wall Street & Euronext Ouverts en simultané 🟢';
-  } else if (isNyseOpen) {
-    statusEl.textContent = 'Wall Street Ouvert (Séance US) 🟢';
-  } else if (isEuronextOpen) {
-    statusEl.textContent = 'Euronext & Xetra Ouverts (Séance Europe) 🟢';
-  } else {
-    statusEl.textContent = 'Marchés fermés pour la nuit • Crypto active 🟢';
-  }
 }
 
 /**
@@ -2630,9 +2386,6 @@ function renderMarketChecklist() {
         saveMarketAssets();
         renderMarketCards();
         renderHeroSpotlight(currentHeroAssetId);
-  renderMarketBarometer();
-  renderMarketMovers();
-  renderForexCryptoModule();
       }
     });
   });
@@ -2646,9 +2399,6 @@ function renderMarketChecklist() {
       renderMarketChecklist();
       renderMarketCards();
       renderHeroSpotlight(currentHeroAssetId);
-      renderMarketBarometer();
-      renderMarketMovers();
-      renderForexCryptoModule();
       if (typeof showToast === 'function') showToast('Actif personnalisé supprimé', 'info');
     });
   });
@@ -2826,10 +2576,6 @@ async function fetchLiveMarketData() {
   renderPortfolioModule();
   renderMarketCards();
   renderHeroSpotlight(currentHeroAssetId);
-  renderMarketBarometer();
-  renderMarketMovers();
-  renderForexCryptoModule();
-  updateMarketGlobalStatus();
   if (typeof renderDashboardMarkets === 'function') {
     renderDashboardMarkets();
   }
@@ -2850,15 +2596,10 @@ function initMarkets() {
   checkAndApplyScheduledDca();
   renderPortfolioModule();
   setupPortfolioModalHandlers();
-  renderIndicesMarquee();
-  updateMarketGlobalStatus();
   if (typeof renderDashboardMarkets === 'function') {
     renderDashboardMarkets();
   }
   renderHeroSpotlight(currentHeroAssetId);
-  renderMarketBarometer();
-  renderMarketMovers();
-  renderForexCryptoModule();
   renderMarketCards();
   setupCleanChartInteractions();
 
@@ -2872,25 +2613,6 @@ function initMarkets() {
   const modalBackdrop = document.querySelector('.market-chart-backdrop');
   const addCustomBtn = document.getElementById('market-add-custom-btn');
   const heroExpandBtn = document.getElementById('hero-expand-btn');
-  const convInput = document.getElementById('quick-conv-amount');
-  const viewListBtn = document.getElementById('view-mode-list-btn');
-  const viewGridBtn = document.getElementById('view-mode-grid-btn');
-
-  // Sélecteur de mode d'affichage (Liste / Grille)
-  if (viewListBtn && viewGridBtn) {
-    viewListBtn.addEventListener('click', () => {
-      currentWatchlistViewMode = 'list';
-      viewListBtn.classList.add('active');
-      viewGridBtn.classList.remove('active');
-      renderMarketCards();
-    });
-    viewGridBtn.addEventListener('click', () => {
-      currentWatchlistViewMode = 'grid';
-      viewGridBtn.classList.add('active');
-      viewListBtn.classList.remove('active');
-      renderMarketCards();
-    });
-  }
 
   // Sélecteur d'actif vedette Hero (NVDA, TSLA, BTC, S&P 500, CW8)
   document.querySelectorAll('#hero-quick-switch .hero-pill-btn').forEach((btn) => {
@@ -2906,11 +2628,6 @@ function initMarkets() {
       const asset = marketAssets.find((a) => a.id === currentHeroAssetId);
       if (asset) openChartModal(asset);
     });
-  }
-
-  // Convertisseur express Forex & Crypto
-  if (convInput) {
-    convInput.addEventListener('input', updateQuickConverter);
   }
 
   // Filtrage par recherche
@@ -2975,8 +2692,6 @@ function initMarkets() {
       saveMarketAssets();
       renderMarketChecklist();
       renderHeroSpotlight(currentHeroAssetId);
-      renderMarketBarometer();
-      renderMarketMovers();
       renderMarketCards();
       if (typeof showToast === 'function') showToast(`Préréglage appliqué : ${btn.textContent}`, 'info');
     });
@@ -3020,7 +2735,6 @@ function initMarkets() {
       saveMarketAssets();
       renderMarketChecklist();
       renderMarketCards();
-      renderMarketMovers();
 
       if (nameIn) nameIn.value = '';
       if (symIn) symIn.value = '';

@@ -29,16 +29,10 @@ function initShortcuts() {
     const todoDate = document.getElementById('todo-date');
 
     const editModal = document.getElementById('edit-modal');
-    const weatherModal = document.getElementById('weather-modal');
-    const feedsModal = document.getElementById('feeds-modal');
-    const hubModal = document.getElementById('custom-hub-modal');
     const categoryModal = document.getElementById('category-modal');
     const commandPaletteModal = document.getElementById('command-palette-modal');
 
     const isEditModalOpen = editModal && !editModal.hidden;
-    const isWeatherModalOpen = weatherModal && !weatherModal.hidden;
-    const isFeedsModalOpen = feedsModal && !feedsModal.hidden;
-    const isHubModalOpen = hubModal && !hubModal.hidden;
     const isCategoryModalOpen = categoryModal && !categoryModal.hidden;
     const isPaletteOpen = commandPaletteModal && !commandPaletteModal.hidden;
 
@@ -54,18 +48,6 @@ function initShortcuts() {
       }
       if (isCategoryModalOpen && typeof closeCategoryModal === 'function') {
         closeCategoryModal();
-        return;
-      }
-      if (isHubModalOpen && typeof closeCustomHub === 'function') {
-        closeCustomHub();
-        return;
-      }
-      if (isWeatherModalOpen && typeof closeWeatherModal === 'function') {
-        closeWeatherModal();
-        return;
-      }
-      if (isFeedsModalOpen && typeof closeFeedsModal === 'function') {
-        closeFeedsModal();
         return;
       }
     }
