@@ -148,24 +148,34 @@ window.revealDashboardFromSkeleton = revealDashboardFromSkeleton;
 document.addEventListener('DOMContentLoaded', () => {
   const loadStart = performance.now();
 
+  const safeInit = (fn, name) => {
+    if (typeof fn === 'function') {
+      try {
+        fn();
+      } catch (err) {
+        console.error(`[Startpage] Error during ${name}:`, err);
+      }
+    }
+  };
+
   // === PHASE 1 : CRITIQUE & SYNCHRONE (Hydratation complète des données locales) ===
-  if (typeof initThemes === 'function') initThemes();
-  if (typeof initAppearance === 'function') initAppearance();
-  if (typeof initBookmarks === 'function') initBookmarks();
-  if (typeof initTasks === 'function') initTasks();
-  if (typeof initCalendar === 'function') initCalendar();
-  if (typeof initSearch === 'function') initSearch();
-  if (typeof loadWidgetSettings === 'function') loadWidgetSettings();
-  if (typeof applyWidgetVisibility === 'function') applyWidgetVisibility();
-  if (typeof initCustomHub === 'function') initCustomHub();
-  if (typeof initShortcuts === 'function') initShortcuts();
-  if (typeof initWidgets === 'function') initWidgets();
+  safeInit(initThemes, 'initThemes');
+  safeInit(initAppearance, 'initAppearance');
+  safeInit(initBookmarks, 'initBookmarks');
+  safeInit(initTasks, 'initTasks');
+  safeInit(initCalendar, 'initCalendar');
+  safeInit(initSearch, 'initSearch');
+  safeInit(loadWidgetSettings, 'loadWidgetSettings');
+  safeInit(applyWidgetVisibility, 'applyWidgetVisibility');
+  safeInit(initCustomHub, 'initCustomHub');
+  safeInit(initShortcuts, 'initShortcuts');
+  safeInit(initWidgets, 'initWidgets');
 
   // Pré-initialisation synchrone des Marchés et de la Météo locale AVANT la révélation
   // afin que TOUS les éléments du Cockpit soient déjà calculés et affichés ensemble
-  if (typeof initMarkets === 'function') initMarkets();
-  if (typeof initWeather === 'function') initWeather();
-  if (typeof initOverviewDashboard === 'function') initOverviewDashboard();
+  safeInit(initMarkets, 'initMarkets');
+  safeInit(initWeather, 'initWeather');
+  safeInit(initOverviewDashboard, 'initOverviewDashboard');
 
   // Révélation coordonnée de la vue initiale complète
   const activeBtn = document.querySelector('.deck-nav-btn.active');
@@ -177,16 +187,16 @@ document.addEventListener('DOMContentLoaded', () => {
     PageSkeletonManager.revealView(initialViewKey);
   }, minSkeletonDisplayMs);
 
-  // Sécurité anti-blocage
+  // Sécurité anti-blocage absolue
   setTimeout(() => {
     PageSkeletonManager.revealView(initialViewKey);
-  }, 1200);
+  }, 1000);
 
   // === PHASE 2 : DIFFÉRÉE (Tâches réseau d'arrière-plan sans impact sur le layout) ===
   const deferNonCritical = () => {
-    if (typeof initWeatherFx === 'function') initWeatherFx();
-    if (typeof initFeeds === 'function') initFeeds();
-    if (typeof initCommandPalette === 'function') initCommandPalette();
+    safeInit(initWeatherFx, 'initWeatherFx');
+    safeInit(initFeeds, 'initFeeds');
+    safeInit(initCommandPalette, 'initCommandPalette');
 
     // Enregistrement du Service Worker pour le mode hors-ligne PWA
     if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {

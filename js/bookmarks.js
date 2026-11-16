@@ -664,6 +664,7 @@ function initBookmarks() {
   const catNameInput = document.getElementById('cat-modal-name');
   const catIconInput = document.getElementById('cat-modal-icon');
   const catIconPreview = document.getElementById('cat-modal-icon-preview');
+  const resetAllBtn = document.getElementById('reset-all-shortcuts-btn');
 
   // Clic sur un lien en mode édition = ouvrir la modale de modification
   if (categoriesContainer) {
