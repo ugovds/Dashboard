@@ -1312,6 +1312,12 @@
   gap: 0.75rem;
 }
 
+.pm-edit-sub-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
 .pm-edit-cell {
   display: flex;
   flex-direction: column;
@@ -1601,6 +1607,9 @@
   }
   .pm-edit-inputs-grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .pm-edit-sub-row {
+    flex-direction: column;
   }
   .pm-add-row-2 {
     grid-template-columns: 1fr;

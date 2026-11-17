@@ -652,9 +652,24 @@ function saveMarketAssets() {
    Gestion précise des dates et prix d'achat (PRU), parts et versements
    ======================================================== */
 
-const PORTFOLIO_STORAGE_KEY = 'violet_portfolio_tracker_v3';
+const PORTFOLIO_STORAGE_KEY = 'violet_portfolio_tracker_v4';
 
-const DEFAULT_PORTFOLIO_STATE = {
+// État vierge par défaut : portefeuille vide à 0 € prêt pour personnalisation totale
+const EMPTY_PORTFOLIO_STATE = {
+  holdings: [],
+  positions: {},
+  dcaRules: {
+    dayOfMonth: 19,
+    allocations: {}
+  },
+  totalInvested: 0,
+  lastDcaExecutionMonth: null,
+  history: [],
+  selectedTimeframe: '24h'
+};
+
+// Portefeuille d'exemple de démonstration (chargé uniquement si demandé)
+const DEMO_PORTFOLIO_STATE = {
   holdings: [
     {
       id: '10ap',
@@ -729,95 +744,59 @@ const DEFAULT_PORTFOLIO_STATE = {
       type: 'initial',
       title: 'Constitution initiale du portefeuille',
       amount: 1345.35,
-      note: '4.19 parts 10AP (122.50€) + 1.35 parts LYP6 (305€) + 4.03 parts XMME (70.80€) + 1 action NVDA (135€)'
+      note: '4.19 parts 10AP + 1.35 parts LYP6 + 4.03 parts XMME + 1 action NVDA'
     }
   ],
   selectedTimeframe: '24h'
 };
+
+const DEFAULT_PORTFOLIO_STATE = EMPTY_PORTFOLIO_STATE;
 
 let portfolioState = loadPortfolioState();
 let currentPortfolioChartPoints = [];
 
 function loadPortfolioState() {
   try {
-    let raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
+    const raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
     if (!raw) {
-      raw = localStorage.getItem('violet_portfolio_tracker_v2') || localStorage.getItem('violet_portfolio_tracker_v1');
+      // Démarrage propre avec un portefeuille vierge
+      return JSON.parse(JSON.stringify(EMPTY_PORTFOLIO_STATE));
     }
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed) {
-        let holdings = Array.isArray(parsed.holdings) ? parsed.holdings : [];
-
-        // Migration si parsed ne contient que "positions" (anciennes versions)
-        if (holdings.length === 0 && parsed.positions && typeof parsed.positions === 'object') {
-          const defaultBuyMeta = {
-            '10ap': { buyPrice: 122.50, buyDate: '2024-01-19', dcaMonthly: 30, name: 'Amundi PEA S&P 500 (10AP)', shortName: 'Amundi S&P 500', symbol: 'EURONEXT:10AP', type: 'etf' },
-            'lyp6': { buyPrice: 305.00, buyDate: '2024-02-19', dcaMonthly: 20, name: 'Amundi Stoxx Europe 600 (LYP6)', shortName: 'Amundi Stoxx 600', symbol: 'XETR:LYP6', type: 'etf' },
-            'xmme': { buyPrice: 70.80, buyDate: '2024-03-19', dcaMonthly: 10, name: 'Xtrackers MSCI Emerging Markets (XMME)', shortName: 'MSCI Emerging Mkts', symbol: 'XETR:XMME', type: 'etf' },
-            'nvda': { buyPrice: 135.00, buyDate: '2024-04-15', dcaMonthly: 0, name: 'NVIDIA Corporation (NVDA)', shortName: 'NVIDIA Corporation', symbol: 'NASDAQ:NVDA', type: 'stock' }
-          };
-
-          holdings = Object.keys(parsed.positions)
-            .map((id) => {
-              const shares = Number(parsed.positions[id] || 0);
-              if (shares <= 0) return null;
-              const meta = defaultBuyMeta[id] || {
-                buyPrice: getAssetPriceInEur(id) * 0.95,
-                buyDate: '2024-01-19',
-                dcaMonthly: 0,
-                name: id.toUpperCase(),
-                shortName: id.toUpperCase(),
-                symbol: id.toUpperCase(),
-                type: 'stock'
-              };
-              return {
-                id,
-                name: meta.name,
-                shortName: meta.shortName,
-                symbol: meta.symbol,
-                type: meta.type,
-                shares,
-                buyPrice: meta.buyPrice,
-                buyDate: meta.buyDate,
-                dcaMonthly: parsed.dcaRules?.allocations?.[id] ?? meta.dcaMonthly,
-                notes: ''
-              };
-            })
-            .filter(Boolean);
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object') {
+      const holdings = Array.isArray(parsed.holdings) ? parsed.holdings : [];
+      const positions = {};
+      const allocations = {};
+      holdings.forEach((h) => {
+        positions[h.id] = Number(h.shares || 0);
+        if (typeof h.dcaMonthly === 'number') {
+          allocations[h.id] = h.dcaMonthly;
         }
+      });
+      // Calcul du montant total investi
+      const realInvested = holdings.reduce((sum, h) => sum + (Number(h.shares || 0) * Number(h.buyPrice || 0)), 0);
 
-        // Synchroniser le dictionnaire des positions
-        const positions = {};
-        holdings.forEach((h) => {
-          positions[h.id] = h.shares;
-        });
-
-        // Calculer le montant réel investi
-        const realInvested = holdings.reduce((sum, h) => sum + (Number(h.shares || 0) * Number(h.buyPrice || 0)), 0);
-
-        return {
-          ...DEFAULT_PORTFOLIO_STATE,
-          ...parsed,
-          holdings,
-          positions,
-          totalInvested: realInvested > 0 ? Number(realInvested.toFixed(2)) : (parsed.totalInvested || DEFAULT_PORTFOLIO_STATE.totalInvested),
-          dcaRules: {
-            ...DEFAULT_PORTFOLIO_STATE.dcaRules,
-            ...(parsed.dcaRules || {}),
-            allocations: {
-              ...DEFAULT_PORTFOLIO_STATE.dcaRules.allocations,
-              ...(parsed.dcaRules?.allocations || {})
-            }
-          },
-          history: Array.isArray(parsed.history) ? parsed.history : DEFAULT_PORTFOLIO_STATE.history
-        };
+      if (parsed.dcaRules?.allocations && typeof parsed.dcaRules.allocations === 'object') {
+        Object.assign(allocations, parsed.dcaRules.allocations);
       }
+
+      return {
+        holdings,
+        positions,
+        totalInvested: Number(realInvested.toFixed(2)),
+        dcaRules: {
+          dayOfMonth: parseInt(parsed.dcaRules?.dayOfMonth, 10) || 19,
+          allocations
+        },
+        lastDcaExecutionMonth: parsed.lastDcaExecutionMonth || null,
+        history: Array.isArray(parsed.history) ? parsed.history : [],
+        selectedTimeframe: parsed.selectedTimeframe || '24h'
+      };
     }
   } catch (err) {
     console.warn('Erreur chargement portfolioState:', err);
   }
-  return JSON.parse(JSON.stringify(DEFAULT_PORTFOLIO_STATE));
+  return JSON.parse(JSON.stringify(EMPTY_PORTFOLIO_STATE));
 }
 
 function savePortfolioState() {
@@ -826,7 +805,7 @@ function savePortfolioState() {
     const positions = {};
     const allocations = { ...(portfolioState.dcaRules?.allocations || {}) };
     (portfolioState.holdings || []).forEach((h) => {
-      positions[h.id] = h.shares;
+      positions[h.id] = Number(h.shares || 0);
       if (typeof h.dcaMonthly === 'number') {
         allocations[h.id] = h.dcaMonthly;
       }
@@ -839,47 +818,37 @@ function savePortfolioState() {
     portfolioState.totalInvested = Number(realInvested.toFixed(2));
 
     localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(portfolioState));
+    window.portfolioState = portfolioState;
   } catch (err) {
     console.warn('Erreur sauvegarde portfolioState:', err);
   }
 }
 
-function resetPortfolioState(mode = 'demo') {
-  if (mode === 'empty') {
-    portfolioState = {
-      holdings: [],
-      positions: {},
-      dcaRules: {
-        dayOfMonth: 19,
-        allocations: {}
-      },
-      totalInvested: 0,
-      lastDcaExecutionMonth: null,
-      history: [
-        {
-          id: 'reset_' + Date.now(),
-          date: new Date().toISOString().split('T')[0],
-          type: 'reset',
-          title: 'Création d\'un nouveau portefeuille vierge',
-          amount: 0,
-          note: 'Portefeuille réinitialisé à zéro pour saisie personnalisée'
-        }
-      ],
-      selectedTimeframe: '24h'
-    };
+function resetPortfolioState(mode = 'empty') {
+  if (mode === 'demo') {
+    portfolioState = JSON.parse(JSON.stringify(DEMO_PORTFOLIO_STATE));
     savePortfolioState();
     renderPortfolioModule();
     if (typeof renderDashboardMarkets === 'function') renderDashboardMarkets();
+    if (typeof renderDashboardPortfolio === 'function') renderDashboardPortfolio();
     if (typeof showToast === 'function') {
-      showToast('Portefeuille vidé ! Vous pouvez désormais ajouter vos propres lignes.', 'info');
+      showToast('Portefeuille de démonstration restauré !', 'info');
     }
   } else {
-    portfolioState = JSON.parse(JSON.stringify(DEFAULT_PORTFOLIO_STATE));
+    // Réinitialisation vierge (vide)
+    portfolioState = JSON.parse(JSON.stringify(EMPTY_PORTFOLIO_STATE));
     savePortfolioState();
+    // Nettoyer d'anciennes clés
+    try {
+      localStorage.removeItem('violet_portfolio_tracker_v3');
+      localStorage.removeItem('violet_portfolio_tracker_v2');
+      localStorage.removeItem('violet_portfolio_tracker_v1');
+    } catch {}
     renderPortfolioModule();
     if (typeof renderDashboardMarkets === 'function') renderDashboardMarkets();
+    if (typeof renderDashboardPortfolio === 'function') renderDashboardPortfolio();
     if (typeof showToast === 'function') {
-      showToast('Portefeuille réinitialisé aux valeurs d\'exemple !', 'info');
+      showToast('Portefeuille réinitialisé à zéro ! Vous pouvez ajouter vos propres actifs.', 'success');
     }
   }
 }
@@ -1821,12 +1790,25 @@ function renderPortfolioModule() {
     gainPctEl.className = `portfolio-gain-pct ${isGain ? 'text-green' : 'text-red'}`;
   }
 
-  if (nextDateEl) nextDateEl.textContent = nextDca.dateStr;
+  const statusPill = document.getElementById('portfolio-status-pill');
+  if (statusPill) {
+    if (nextDca.monthlyTotal > 0) {
+      statusPill.innerHTML = `<span class="status-dot pulse-green"></span> DCA Programmé (${nextDca.dateStr})`;
+    } else {
+      statusPill.innerHTML = `<span class="status-dot" style="background: rgba(255,255,255,0.3);"></span> Aucun DCA actif`;
+    }
+  }
+
+  if (nextDateEl) nextDateEl.textContent = nextDca.monthlyTotal > 0 ? nextDca.dateStr : '--';
   if (nextCountdownEl) {
-    nextCountdownEl.innerHTML = `<i class="fa-regular fa-clock"></i> Dans ${nextDca.daysRemaining} jour${nextDca.daysRemaining > 1 ? 's' : ''}`;
+    if (nextDca.monthlyTotal > 0) {
+      nextCountdownEl.innerHTML = `<i class="fa-regular fa-clock"></i> Dans ${nextDca.daysRemaining} jour${nextDca.daysRemaining > 1 ? 's' : ''}`;
+    } else {
+      nextCountdownEl.innerHTML = `<i class="fa-regular fa-clock"></i> Inactif`;
+    }
   }
   if (nextSumEl) {
-    nextSumEl.textContent = `${nextDca.monthlyTotal.toFixed(2)} €`;
+    nextSumEl.textContent = `${nextDca.monthlyTotal.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
   }
 
   // Sous-titre dynamique dans le hero
@@ -1952,6 +1934,23 @@ function renderPortfolioPositionsTab() {
           </div>
         </div>
 
+        <div class="pm-edit-sub-row">
+          <div class="pm-edit-cell" style="flex: 2;">
+            <label>Compte / Courtier / Note (optionnel)</label>
+            <div class="pm-input-wrap">
+              <input type="text" class="pm-input-ctrl pm-field-notes" data-id="${h.id}" value="${h.notes || ''}" placeholder="Ex: PEA BoursoBank, CTO Trade Republic, Assurance Vie..." />
+            </div>
+          </div>
+          ${h.id.startsWith('cust_') ? `
+          <div class="pm-edit-cell" style="flex: 1;">
+            <label>Cours direct estimé (€)</label>
+            <div class="pm-input-wrap">
+              <input type="number" step="0.01" min="0" class="pm-input-ctrl pm-field-live-custom" data-id="${h.id}" value="${h.priceEur.toFixed(2)}" title="Mettre à jour le cours direct de cet actif sur mesure" />
+            </div>
+          </div>
+          ` : ''}
+        </div>
+
         <div class="pm-edit-card-foot" id="pm-foot-${h.id}">
           <span>Investi : <strong id="pm-invested-${h.id}">${h.investedEur.toFixed(2)} €</strong></span>
           <span>Valeur : <strong id="pm-val-${h.id}">${h.totalEur.toFixed(2)} €</strong></span>
@@ -1969,11 +1968,12 @@ function renderPortfolioPositionsTab() {
     const dateInput = card.querySelector('.pm-field-date');
     const liveFillBtn = card.querySelector('.pm-btn-live-fill');
     const deleteBtn = card.querySelector('.pm-delete-row-btn');
+    const liveCustomInput = card.querySelector('.pm-field-live-custom');
 
     const updateLineStats = () => {
       const p = parseFloat(priceInput.value) || 0;
       const q = parseFloat(sharesInput.value) || 0;
-      const liveP = getAssetPriceInEur(id);
+      const liveP = liveCustomInput ? (parseFloat(liveCustomInput.value) || getAssetPriceInEur(id)) : getAssetPriceInEur(id);
       const invested = p * q;
       const current = liveP * q;
       const gain = current - invested;
@@ -1997,6 +1997,7 @@ function renderPortfolioPositionsTab() {
     priceInput?.addEventListener('input', updateLineStats);
     sharesInput?.addEventListener('input', updateLineStats);
     dateInput?.addEventListener('change', updateLineStats);
+    liveCustomInput?.addEventListener('input', updateLineStats);
 
     liveFillBtn?.addEventListener('click', () => {
       const lp = liveFillBtn.dataset.livePrice;
@@ -2026,7 +2027,8 @@ function recalcModalSummary() {
     const id = card.dataset.assetId;
     const p = parseFloat(card.querySelector('.pm-field-price')?.value) || 0;
     const q = parseFloat(card.querySelector('.pm-field-shares')?.value) || 0;
-    const liveP = getAssetPriceInEur(id);
+    const liveCustomInput = card.querySelector('.pm-field-live-custom');
+    const liveP = liveCustomInput ? (parseFloat(liveCustomInput.value) || getAssetPriceInEur(id)) : getAssetPriceInEur(id);
     totalInv += p * q;
     totalCur += liveP * q;
   });
@@ -2107,11 +2109,11 @@ function initAddAssetTab() {
     const prevCurrent = document.getElementById('pm-prev-current');
     const prevGain = document.getElementById('pm-prev-gain');
 
-    if (prevInvested) prevInvested.textContent = `${invested.toFixed(2)} €`;
-    if (prevCurrent) prevCurrent.textContent = `${current.toFixed(2)} €`;
+    if (prevInvested) prevInvested.textContent = `${invested.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+    if (prevCurrent) prevCurrent.textContent = `${current.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
     if (prevGain) {
       prevGain.className = `pm-prev-val ${isGain ? 'text-green' : 'text-red'}`;
-      prevGain.textContent = `${sign}${gain.toFixed(2)} € (${sign}${gainPct.toFixed(2)}%)`;
+      prevGain.textContent = `${sign}${gain.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (${sign}${gainPct.toFixed(2)}%)`;
     }
   };
 
@@ -2238,7 +2240,14 @@ function initAddAssetTab() {
         });
       }
 
-      portfolioState.positions[assetId] = Number((portfolioState.positions[assetId] || 0) + shares);
+      const finalShares = existing ? existing.shares : shares;
+      portfolioState.positions[assetId] = Number(finalShares);
+      if (!portfolioState.dcaRules) {
+        portfolioState.dcaRules = { dayOfMonth: 19, allocations: {} };
+      }
+      if (!portfolioState.dcaRules.allocations) {
+        portfolioState.dcaRules.allocations = {};
+      }
       if (dca > 0) {
         portfolioState.dcaRules.allocations[assetId] = dca;
       }
@@ -2363,7 +2372,24 @@ function switchPortfolioModalTab(targetTab) {
   });
 
   if (targetTab === 'positions') renderPortfolioPositionsTab();
-  if (targetTab === 'add') initAddAssetTab();
+  if (targetTab === 'add') {
+    initAddAssetTab();
+    const buyPriceInput = document.getElementById('pm-add-buy-price');
+    const sharesInput = document.getElementById('pm-add-shares');
+    const dcaInput = document.getElementById('pm-add-dca');
+    const buyDateInput = document.getElementById('pm-add-buy-date');
+    if (buyDateInput) buyDateInput.value = new Date().toISOString().split('T')[0];
+    if (sharesInput && (!sharesInput.value || parseFloat(sharesInput.value) <= 0)) sharesInput.value = '1.00';
+    if (dcaInput && !dcaInput.value) dcaInput.value = '0';
+    const select = document.getElementById('pm-add-asset-select');
+    if (select && select.value !== 'custom' && buyPriceInput) {
+      const lp = getAssetPriceInEur(select.value);
+      buyPriceInput.value = lp.toFixed(2);
+      buyPriceInput.dataset.autoFilled = 'true';
+    }
+    const evt = new Event('input', { bubbles: true });
+    sharesInput?.dispatchEvent(evt);
+  }
   if (targetTab === 'dca') renderPortfolioDcaTab();
   if (targetTab === 'history') renderPortfolioHistoryTable();
 }
@@ -2431,8 +2457,10 @@ function setupPortfolioModalHandlers() {
 
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-      const choice = confirm("Voulez-vous réinitialiser votre portefeuille ?\n- OK pour restaurer le portefeuille de démonstration (S&P 500, Stoxx 600, Emerging Markets, NVIDIA)\n- Annuler pour ne rien modifier.");
-      if (choice) resetPortfolioState('demo');
+      const choice = confirm("Voulez-vous réinitialiser votre portefeuille à zéro (0 €) ?\n\n- OK : Vider complètement le portefeuille pour repartir de zéro\n- Annuler : Conserver vos données actuelles");
+      if (choice) {
+        resetPortfolioState('empty');
+      }
     });
   }
 
@@ -2482,6 +2510,8 @@ function setupPortfolioModalHandlers() {
             const p = parseFloat(card.querySelector('.pm-field-price')?.value);
             const s = parseFloat(card.querySelector('.pm-field-shares')?.value);
             const dca = parseFloat(card.querySelector('.pm-field-dca')?.value);
+            const notes = card.querySelector('.pm-field-notes')?.value;
+            const liveCustom = parseFloat(card.querySelector('.pm-field-live-custom')?.value);
 
             if (d) h.buyDate = d;
             if (!isNaN(p) && p >= 0) h.buyPrice = p;
@@ -2490,6 +2520,14 @@ function setupPortfolioModalHandlers() {
               h.dcaMonthly = dca;
               if (portfolioState.dcaRules) {
                 portfolioState.dcaRules.allocations[h.id] = dca;
+              }
+            }
+            if (typeof notes === 'string') h.notes = notes.trim();
+            if (!isNaN(liveCustom) && liveCustom >= 0) {
+              const custAsset = marketAssets.find((a) => a.id === h.id);
+              if (custAsset) {
+                custAsset.basePrice = liveCustom;
+                saveMarketAssets();
               }
             }
             portfolioState.positions[h.id] = h.shares;
@@ -2538,6 +2576,7 @@ window.calculatePortfolioSummary = calculatePortfolioSummary;
 window.getPortfolioChartData = getPortfolioChartData;
 window.simulateDcaExecution = simulateDcaExecution;
 window.resetPortfolioState = resetPortfolioState;
+window.loadPortfolioState = loadPortfolioState;
 window.checkAndApplyScheduledDca = checkAndApplyScheduledDca;
 window.portfolioState = portfolioState;
 window.openPortfolioManageModal = openPortfolioManageModal;

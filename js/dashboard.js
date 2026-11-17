@@ -285,12 +285,13 @@
     }
     if (!summary || typeof summary.totalValue !== 'number') {
       summary = {
-        totalValue: 1650.42,
-        totalChange24hEur: 12.50,
-        totalChange24hPct: 0.76,
-        totalInvested: 1513.24,
-        gainLatentEur: 137.18,
-        gainLatentPct: 9.07
+        totalValue: 0,
+        totalChange24hEur: 0,
+        totalChange24hPct: 0,
+        totalInvested: 0,
+        gainLatentEur: 0,
+        gainLatentPct: 0,
+        holdings: []
       };
     }
 
@@ -468,15 +469,17 @@
     const footer = document.getElementById('dash-portfolio-footer-bar');
     if (!footer) return;
 
-    const investedStr = (summary.totalInvested || 1513.24).toLocaleString('fr-FR', {
+    const investedStr = (summary.totalInvested ?? 0).toLocaleString('fr-FR', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
 
-    let nextDcaStr = '19 du mois (+60 €)';
+    let nextDcaStr = 'Aucun DCA actif';
     if (typeof window.getNextDcaDateInfo === 'function') {
       const dcaInfo = window.getNextDcaDateInfo();
-      nextDcaStr = `${dcaInfo.dateStr} (J-${dcaInfo.daysRemaining}) • +${dcaInfo.monthlyTotal} €`;
+      if (dcaInfo && dcaInfo.monthlyTotal > 0) {
+        nextDcaStr = `${dcaInfo.dateStr} (J-${dcaInfo.daysRemaining}) • +${dcaInfo.monthlyTotal} €`;
+      }
     }
 
     let holdingsHtml = '';

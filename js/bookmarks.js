@@ -522,6 +522,9 @@ function exportFullConfig() {
   let appearanceData = null;
   try { appearanceData = JSON.parse(localStorage.getItem('startpage_appearance') || 'null'); } catch {}
 
+  let portfolioData = null;
+  try { portfolioData = JSON.parse(localStorage.getItem('violet_portfolio_tracker_v4') || 'null'); } catch {}
+
   const config = {
     app: 'violet-startpage',
     version: '2.1',
@@ -535,7 +538,8 @@ function exportFullConfig() {
     appearance: appearanceData,
     categories: categories,
     todos: todos,
-    customFeeds: customFeeds
+    customFeeds: customFeeds,
+    portfolio: portfolioData
   };
 
   const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(config, null, 2));
@@ -618,6 +622,14 @@ function importFullConfig(file) {
 
       if (data.theme && typeof applyTheme === 'function') {
         applyTheme(data.theme);
+      }
+
+      if (data.portfolio && typeof data.portfolio === 'object') {
+        localStorage.setItem('violet_portfolio_tracker_v4', JSON.stringify(data.portfolio));
+        if (typeof window.loadPortfolioState === 'function') {
+          window.portfolioState = window.loadPortfolioState();
+          if (typeof window.renderPortfolioModule === 'function') window.renderPortfolioModule();
+        }
       }
 
       if (typeof showToast === 'function') {
