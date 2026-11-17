@@ -69,7 +69,7 @@ const PageSkeletonManager = {
     realView.classList.add('is-loading');
   },
 
-  // Révèle une vue depuis son squelette de manière synchronisée
+  // Révèle une vue depuis son squelette de manière instantanée et fluide
   revealView(viewKey, callback) {
     const skeleton = document.getElementById(`${viewKey}-skeleton-view`);
     const realView = document.getElementById(`${viewKey}-real-view`);
@@ -93,14 +93,14 @@ const PageSkeletonManager = {
         skeleton.classList.add('is-hidden');
         skeleton.setAttribute('hidden', '');
         if (typeof callback === 'function') callback();
-      }, 380);
+      }, 120);
 
       this.activeTransitions.set(viewKey, timeoutId);
     });
   },
 
   // Prépare le rendu sous le squelette puis révèle la vue complète d'un coup
-  prepareAndRevealView(viewKey, onRender, minDelayMs = 240) {
+  prepareAndRevealView(viewKey, onRender, minDelayMs = 0) {
     const skeleton = document.getElementById(`${viewKey}-skeleton-view`);
     const realView = document.getElementById(`${viewKey}-real-view`);
 
@@ -111,12 +111,7 @@ const PageSkeletonManager = {
       return;
     }
 
-    // Afficher le squelette immédiatement
-    this.showSkeleton(viewKey);
-
-    const t0 = performance.now();
-
-    // Rendu hors-champ pendant que le squelette est visible
+    // Rendu immédiat
     if (typeof onRender === 'function') {
       try {
         onRender();
@@ -125,15 +120,14 @@ const PageSkeletonManager = {
       }
     }
 
-    // Ajustement de la temporisation pour garantir une transition fluide et soyeuse
-    const elapsed = performance.now() - t0;
-    const remainingDelay = Math.max(0, minDelayMs - elapsed);
-
-    const timerId = setTimeout(() => {
+    if (minDelayMs > 0) {
+      const timerId = setTimeout(() => {
+        this.revealView(viewKey);
+      }, minDelayMs);
+      this.activeTransitions.set(viewKey, timerId);
+    } else {
       this.revealView(viewKey);
-    }, remainingDelay);
-
-    this.activeTransitions.set(viewKey, timerId);
+    }
   }
 };
 
@@ -177,20 +171,12 @@ document.addEventListener('DOMContentLoaded', () => {
   safeInit(initWeather, 'initWeather');
   safeInit(initOverviewDashboard, 'initOverviewDashboard');
 
-  // Révélation coordonnée de la vue initiale complète
+  // Révélation immédiate de la vue initiale sans attente artificielle
   const activeBtn = document.querySelector('.deck-nav-btn.active');
   const initialViewKey = activeBtn?.dataset?.deckView || 'dashboard';
-
-  const elapsed = performance.now() - loadStart;
-  const minSkeletonDisplayMs = Math.max(0, 260 - elapsed);
-  setTimeout(() => {
+  requestAnimationFrame(() => {
     PageSkeletonManager.revealView(initialViewKey);
-  }, minSkeletonDisplayMs);
-
-  // Sécurité anti-blocage absolue
-  setTimeout(() => {
-    PageSkeletonManager.revealView(initialViewKey);
-  }, 1000);
+  });
 
   // === PHASE 2 : DIFFÉRÉE (Tâches réseau d'arrière-plan sans impact sur le layout) ===
   const deferNonCritical = () => {

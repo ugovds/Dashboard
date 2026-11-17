@@ -275,11 +275,11 @@
 }
 
 /* ========================================================
-   2. CORPS DU STUDIO : GRILLE 2 COLONNES (58% / 42%)
+   2. CORPS DU BLOC-NOTES : PLEINE LARGEUR (100%)
    ======================================================== */
 .studio-body {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(380px, 1fr);
+  grid-template-columns: 1fr;
   gap: clamp(14px, 1.8vw, 22px);
   flex: 1;
   min-height: 0;

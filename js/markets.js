@@ -2590,36 +2590,46 @@ const chart24hCache = {};
 // Indicateur et URL du serveur local runner.py pour les flux Yahoo Finance
 let marketRunnerBaseUrl = null;
 let isRealBourseDataActive = false;
+let marketRunnerCheckedTime = 0;
 
 /**
- * Détecte l'URL du serveur local runner.py pour relayer les flux réels Yahoo Finance
+ * Détecte l'URL du serveur local runner.py pour relayer les flux réels Yahoo Finance (parallélisé & non-bloquant)
  */
 async function detectMarketRunner() {
   if (marketRunnerBaseUrl !== null) return marketRunnerBaseUrl;
+  if (Date.now() - marketRunnerCheckedTime < 25000) return null;
+  marketRunnerCheckedTime = Date.now();
+
   const candidates = [
-    '', // Si servi directement sur le même port que runner.py
+    window.location.protocol.startsWith('http') ? '' : null,
     'http://127.0.0.1:3000',
     'http://localhost:3000',
-    'http://127.0.0.1:8080',
-    'http://localhost:8080'
-  ];
+    'http://127.0.0.1:8080'
+  ].filter(c => c !== null);
 
-  for (const base of candidates) {
+  const checkCandidate = async (base) => {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 250);
     try {
-      const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 350);
       const res = await fetch(`${base}/api/status`, { signal: controller.signal });
       clearTimeout(tid);
       if (res.ok) {
         const data = await res.json();
-        if (data && data.engine === 'local-native') {
-          marketRunnerBaseUrl = base;
+        if (data && (data.engine === 'local-native' || data.status === 'ok')) {
           return base;
         }
       }
     } catch {}
+    throw new Error('Candidate unavailable');
+  };
+
+  try {
+    const winner = await Promise.any(candidates.map(checkCandidate));
+    marketRunnerBaseUrl = winner;
+    return winner;
+  } catch {
+    return null;
   }
-  return null;
 }
 
 /**
@@ -3648,8 +3658,12 @@ function initMarkets() {
     });
   }
 
-  // Actualisation réseau initiale et intervalle (60s)
-  fetchLiveMarketData();
+  // Actualisation réseau initiale différée en tâche de fond (ne bloque jamais le premier affichage)
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => fetchLiveMarketData(), { timeout: 2000 });
+  } else {
+    setTimeout(fetchLiveMarketData, 500);
+  }
   setInterval(fetchLiveMarketData, 60000);
 }
 

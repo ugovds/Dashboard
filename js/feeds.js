@@ -643,6 +643,23 @@ function initFeeds() {
     });
   }
 
-  // Chargement initial du flux "À la une"
-  loadFeed(currentActiveFeedId || 'all');
+  // Chargement paresseux (Lazy-loading) :
+  // On pré-affiche le cache local (0 ms) et on ne déclenche les requêtes réseau
+  // que si l'utilisateur consulte activement l'onglet Actualités.
+  const cached = getStoredFeedCache(currentActiveFeedId || 'all');
+  if (cached && cached.html && feedList) {
+    feedList.innerHTML = cached.html;
+  }
+
+  const activeDeckView = document.querySelector('.deck-nav-btn.active')?.dataset?.deckView;
+  if (activeDeckView === 'feeds') {
+    loadFeed(currentActiveFeedId || 'all');
+  }
+
+  const feedsNavBtn = document.querySelector('.deck-nav-btn[data-deck-view="feeds"]');
+  if (feedsNavBtn) {
+    feedsNavBtn.addEventListener('click', () => {
+      loadFeed(currentActiveFeedId || 'all');
+    }, { once: true });
+  }
 }

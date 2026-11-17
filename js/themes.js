@@ -12,13 +12,13 @@ const themesConfig = {
   },
   '2': {
     name: 'Sakura',
-    img: 'images/gif2.gif',
+    img: 'images/gif2.webp',
     badge: '桜 // SAKURA',
     accent: '#ff85c0'
   },
   '3': {
     name: 'Cyberdeck',
-    img: 'images/gif3.gif',
+    img: 'images/gif3.webp',
     badge: '電脳 // CYBERDECK',
     accent: '#31e1f7'
   },

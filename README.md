@@ -24,7 +24,7 @@ La startpage intègre **5 thèmes visuels** avec éclairage ambiant (Ambilight),
 
 | Thème 1 : Kanagawa 🌊 | Thème 2 : Sakura 🌸 | Thème 3 : Cyberdeck ⚡ | Thème 4 : Retro Wave 🎮 | Thème 5 : Liquid Glass 💎 |
 | :---: | :---: | :---: | :---: | :---: |
-| <img src="images/gif.gif" width="150" /> | <img src="images/gif2.gif" width="150" /> | <img src="images/gif3.gif" width="150" /> | <img src="images/gif4.gif" width="150" /> | <img src="images/glass.svg" width="150" /> |
+| <img src="images/gif.gif" width="150" /> | <img src="images/gif2.webp" width="150" /> | <img src="images/gif3.webp" width="150" /> | <img src="images/gif4.gif" width="150" /> | <img src="images/glass.svg" width="150" /> |
 | *Cyan & Menthe froide* | *Rose & Néo-Pastel* | *Violet & Néon Cyberdeck* | *Monochrome Ukiyo & 8-Bit* | *Apple Liquid Glass & Reflets* |
 
 ### 💎 Mode Apple Liquid Glass (Thème 5)
@@ -70,7 +70,7 @@ Le tableau de bord est structuré en **Dashboard moderne de type cockpit** avec 
    - **Actualités** : Lecteur de flux d'actualités F1, Football, Tech et vos flux RSS sur mesure.
    - **Système & Marchés** : Suivi indiciel en temps réel, valorisation de portefeuille multi-actifs (10AP, LYP6, XMME, NVDA), moteur d'automatisation DCA du 19 du mois et graphique interactif d'évolution (24h, 1 semaine, 1 mois, 1 an).
    - **Focus Pomodoro** : Minuteur circulaire avec presets, carillon et jalons de session.
-   - **Dev Studio & Bloc-Notes** : Playground multi-langages (Python, C, Oz, Java, JS), terminal interactif et moteur d'exécution local ultra-rapide (`./runner.py`).
+   - **Bloc-Notes Markdown** : Éditeur rapide, scratchpad, rendu Markdown en direct et export de fichiers .md. Passerelle marchés en temps réel via `./runner.py`.
    - **Ambiance Lo-Fi** : Synthèse audio procédurale et radio avec visualiseur Canvas.
    - **Citations** : Citations de culture hacker, dev et cyberpunk.
    - **Paramètres** : Centre complet de personnalisation des thèmes, de l'horloge et sauvegarde JSON.

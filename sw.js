@@ -1,8 +1,8 @@
 /**
- * sw.js - Service Worker pour Violet Startpage (Mode Hors-Ligne & Cache PWA)
+ * sw.js - Service Worker pour Violet Startpage (Mode Hors-Ligne & Cache Instantané PWA)
  */
 
-const CACHE_NAME = 'violet-startpage-v7.2';
+const CACHE_NAME = 'violet-startpage-v8.0';
 
 const STATIC_ASSETS = [
   './',
@@ -40,8 +40,7 @@ const STATIC_ASSETS = [
   './js/feeds.js',
   './js/bookmarks.js',
   './js/markets.js',
-  './js/skulpt.min.js',
-  './js/notes-studio.js',
+  './js/notes.js',
   './js/widgets.js',
   './js/custom-hub.js',
   './js/command-palette.js',
@@ -49,12 +48,12 @@ const STATIC_ASSETS = [
   './js/dashboard.js',
   './js/app.js',
   './images/gif.gif',
-  './images/gif2.gif',
-  './images/gif3.gif',
+  './images/gif2.webp',
+  './images/gif3.webp',
   './images/gif4.gif'
 ];
 
-// Installation : mise en cache des fichiers statiques
+// Installation : pré-mise en cache des fichiers statiques optimisés
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -80,31 +79,38 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Interception des requêtes réseau :
-// Network-First pour les assets locaux pour voir instantanément les mises à jour sans bloquer sur l'ancien cache
+// Interception des requêtes : Stale-While-Revalidate pour 0 ms de latence
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Requêtes non-GET ignorées
   if (event.request.method !== 'GET') return;
 
-  // Assets locaux : Network-First avec repli sur cache si hors-ligne
+  // 1. Les routes d'API locales ne doivent pas être mises en cache statique
+  if (url.origin === self.location.origin && url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // 2. Fichiers statiques locaux : Stale-While-Revalidate (Réponse immédiate depuis le cache + MàJ en arrière-plan)
   if (url.origin === self.location.origin) {
     event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return networkResponse;
-        })
-        .catch(() => caches.match(event.request))
+      caches.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            }
+            return networkResponse;
+          })
+          .catch(() => cachedResponse);
+
+        return cachedResponse || fetchPromise;
+      })
     );
     return;
   }
 
-  // APIs externes (wttr.in, feeds, coingecko) : Network-First avec repli sur cache
+  // 3. Requêtes externes (météo, APIs boursières) : Network-First avec repli sur cache
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
@@ -116,8 +122,6 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(() => {
-        return caches.match(event.request);
-      })
+      .catch(() => caches.match(event.request))
   );
 });

@@ -10,7 +10,7 @@ const VIEW_TITLES = {
   feeds: { title: 'Actualités en Direct', sub: 'F1, Football, Tech & Flux RSS', icon: 'fa-solid fa-newspaper' },
   system: { title: 'Marchés & Portefeuille', sub: 'Cotations réelles, indices mondiaux & ETF', icon: 'fa-solid fa-chart-line' },
   pomodoro: { title: 'Studio Focus & Ambiance', sub: 'Minuteur Pomodoro, Intervalles & Sons Lo-Fi', icon: 'fa-solid fa-stopwatch' },
-  notes: { title: 'Dev Studio & Notes', sub: 'Playground Python, C, Oz, Java & Markdown', icon: 'fa-solid fa-laptop-code' },
+  notes: { title: 'Bloc-Notes Markdown', sub: 'Éditeur rapide, aperçu en direct & export .md', icon: 'fa-solid fa-file-pen' },
   quotes: { title: 'Citations & Motivation', sub: 'Philosophie hacker & science-fiction', icon: 'fa-solid fa-quote-left' },
   customize: { title: 'Paramètres & Hub', sub: 'Thèmes, Couleurs, Horloge & Sauvegarde', icon: 'fa-solid fa-sliders' }
 };
