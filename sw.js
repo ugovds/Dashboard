@@ -2,7 +2,7 @@
  * sw.js - Service Worker pour Violet Startpage (Mode Hors-Ligne & Cache Instantané PWA)
  */
 
-const CACHE_NAME = 'violet-startpage-v8.1';
+const CACHE_NAME = 'violet-startpage-v8.2';
 
 const STATIC_ASSETS = [
   './',
@@ -90,8 +90,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Fichiers statiques locaux : Stale-While-Revalidate (Réponse immédiate depuis le cache + MàJ en arrière-plan)
+  // 2. Fichiers dynamiques locaux (HTML, JS, CSS) : Network-First avec mise à jour du cache
   if (url.origin === self.location.origin) {
+    const isCodeFile = url.pathname.endsWith('.js') ||
+                       url.pathname.endsWith('.css') ||
+                       url.pathname.endsWith('.html') ||
+                       url.pathname === '/' ||
+                       url.pathname === '';
+
+    if (isCodeFile) {
+      event.respondWith(
+        fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            }
+            return networkResponse;
+          })
+          .catch(() => caches.match(event.request))
+      );
+      return;
+    }
+
+    // Autres fichiers statiques locaux (images, polices) : Stale-While-Revalidate
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         const fetchPromise = fetch(event.request)

@@ -469,13 +469,16 @@
     const footer = document.getElementById('dash-portfolio-footer-bar');
     if (!footer) return;
 
-    const investedStr = (summary.totalInvested ?? 0).toLocaleString('fr-FR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    const totalInvestedNum = summary.totalInvested ?? 0;
+    const investedStr = (totalInvestedNum > 0 && Array.isArray(summary.holdings) && summary.holdings.length > 0)
+      ? totalInvestedNum.toLocaleString('fr-FR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
+      : '0,00';
 
     let nextDcaStr = 'Aucun DCA actif';
-    if (typeof window.getNextDcaDateInfo === 'function') {
+    if (typeof window.getNextDcaDateInfo === 'function' && Array.isArray(summary.holdings) && summary.holdings.length > 0) {
       const dcaInfo = window.getNextDcaDateInfo();
       if (dcaInfo && dcaInfo.monthlyTotal > 0) {
         nextDcaStr = `${dcaInfo.dateStr} (J-${dcaInfo.daysRemaining}) • +${dcaInfo.monthlyTotal} €`;

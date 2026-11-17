@@ -652,7 +652,7 @@ function saveMarketAssets() {
    Gestion précise des dates et prix d'achat (PRU), parts et versements
    ======================================================== */
 
-const PORTFOLIO_STORAGE_KEY = 'violet_portfolio_tracker_v4';
+const PORTFOLIO_STORAGE_KEY = 'violet_portfolio_tracker_v5';
 
 // État vierge par défaut : portefeuille vide à 0 € prêt pour personnalisation totale
 const EMPTY_PORTFOLIO_STATE = {
@@ -757,6 +757,11 @@ let currentPortfolioChartPoints = [];
 
 function loadPortfolioState() {
   try {
+    // Purge préventive des anciennes versions (v1, v2, v3, v4) pour garantir un démarrage propre à zéro
+    ['violet_portfolio_tracker_v1', 'violet_portfolio_tracker_v2', 'violet_portfolio_tracker_v3', 'violet_portfolio_tracker_v4'].forEach((k) => {
+      try { localStorage.removeItem(k); } catch (_) {}
+    });
+
     const raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
     if (!raw) {
       // Démarrage propre avec un portefeuille vierge
@@ -776,19 +781,19 @@ function loadPortfolioState() {
       // Calcul du montant total investi
       const realInvested = holdings.reduce((sum, h) => sum + (Number(h.shares || 0) * Number(h.buyPrice || 0)), 0);
 
-      if (parsed.dcaRules?.allocations && typeof parsed.dcaRules.allocations === 'object') {
+      if (parsed.dcaRules?.allocations && typeof parsed.dcaRules.allocations === 'object' && holdings.length > 0) {
         Object.assign(allocations, parsed.dcaRules.allocations);
       }
 
       return {
         holdings,
-        positions,
-        totalInvested: Number(realInvested.toFixed(2)),
+        positions: holdings.length === 0 ? {} : positions,
+        totalInvested: holdings.length === 0 ? 0 : Number(realInvested.toFixed(2)),
         dcaRules: {
           dayOfMonth: parseInt(parsed.dcaRules?.dayOfMonth, 10) || 19,
-          allocations
+          allocations: holdings.length === 0 ? {} : allocations
         },
-        lastDcaExecutionMonth: parsed.lastDcaExecutionMonth || null,
+        lastDcaExecutionMonth: holdings.length === 0 ? null : (parsed.lastDcaExecutionMonth || null),
         history: Array.isArray(parsed.history) ? parsed.history : [],
         selectedTimeframe: parsed.selectedTimeframe || '24h'
       };
@@ -815,7 +820,7 @@ function savePortfolioState() {
       portfolioState.dcaRules.allocations = allocations;
     }
     const realInvested = (portfolioState.holdings || []).reduce((sum, h) => sum + (Number(h.shares || 0) * Number(h.buyPrice || 0)), 0);
-    portfolioState.totalInvested = Number(realInvested.toFixed(2));
+    portfolioState.totalInvested = (portfolioState.holdings && portfolioState.holdings.length > 0) ? Number(realInvested.toFixed(2)) : 0;
 
     localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(portfolioState));
     window.portfolioState = portfolioState;
@@ -838,12 +843,10 @@ function resetPortfolioState(mode = 'empty') {
     // Réinitialisation vierge (vide)
     portfolioState = JSON.parse(JSON.stringify(EMPTY_PORTFOLIO_STATE));
     savePortfolioState();
-    // Nettoyer d'anciennes clés
-    try {
-      localStorage.removeItem('violet_portfolio_tracker_v3');
-      localStorage.removeItem('violet_portfolio_tracker_v2');
-      localStorage.removeItem('violet_portfolio_tracker_v1');
-    } catch {}
+    // Nettoyer toutes les anciennes clés résiduelles
+    ['violet_portfolio_tracker_v1', 'violet_portfolio_tracker_v2', 'violet_portfolio_tracker_v3', 'violet_portfolio_tracker_v4'].forEach((k) => {
+      try { localStorage.removeItem(k); } catch (_) {}
+    });
     renderPortfolioModule();
     if (typeof renderDashboardMarkets === 'function') renderDashboardMarkets();
     if (typeof renderDashboardPortfolio === 'function') renderDashboardPortfolio();
@@ -1101,7 +1104,7 @@ function getNextDcaDateInfo() {
     dateStr: `${targetDay} ${monthNames[targetMonth]}`,
     fullDateStr: `${targetDay} ${monthNames[targetMonth]} ${targetYear}`,
     daysRemaining: diffDays,
-    monthlyTotal: totalDcaMonthly
+    monthlyTotal: (portfolioState.holdings && portfolioState.holdings.length > 0) ? totalDcaMonthly : 0
   };
 }
 
@@ -2352,6 +2355,66 @@ function renderPortfolioHistoryTable() {
 }
 
 /**
+ * Réinitialise proprement le formulaire d'ajout avec des valeurs par défaut saines
+ */
+function resetAddAssetForm() {
+  const select = document.getElementById('pm-add-asset-select');
+  const customFields = document.getElementById('pm-custom-asset-fields');
+  const buyDateInput = document.getElementById('pm-add-buy-date');
+  const buyPriceInput = document.getElementById('pm-add-buy-price');
+  const useLiveBtn = document.getElementById('pm-add-use-live-price');
+  const sharesInput = document.getElementById('pm-add-shares');
+  const dcaInput = document.getElementById('pm-add-dca');
+  const notesInput = document.getElementById('pm-add-notes');
+
+  if (buyDateInput) buyDateInput.value = new Date().toISOString().split('T')[0];
+  if (sharesInput) sharesInput.value = '1.00';
+  if (dcaInput) dcaInput.value = '0';
+  if (notesInput) notesInput.value = '';
+
+  const assetId = select ? select.value : '10ap';
+  if (assetId === 'custom') {
+    if (customFields) customFields.style.display = 'flex';
+    if (useLiveBtn) useLiveBtn.style.display = 'none';
+    if (buyPriceInput) {
+      buyPriceInput.value = '100.00';
+      buyPriceInput.dataset.autoFilled = 'true';
+    }
+  } else {
+    if (customFields) customFields.style.display = 'none';
+    if (useLiveBtn) useLiveBtn.style.display = 'inline-flex';
+    const lp = getAssetPriceInEur(assetId);
+    if (useLiveBtn) useLiveBtn.textContent = `Cours actuel : ${lp.toFixed(2)} €`;
+    if (buyPriceInput) {
+      buyPriceInput.value = lp.toFixed(2);
+      buyPriceInput.dataset.autoFilled = 'true';
+    }
+  }
+
+  // Calcul propre de l'aperçu pour la nouvelle ligne
+  const liveP = assetId === 'custom' ? (parseFloat(document.getElementById('pm-custom-price')?.value) || 0) : getAssetPriceInEur(assetId);
+  const buyP = parseFloat(buyPriceInput?.value) || 0;
+  const q = parseFloat(sharesInput?.value) || 0;
+  const invested = buyP * q;
+  const current = liveP * q;
+  const gain = current - invested;
+  const gainPct = invested > 0 ? (gain / invested) * 100 : 0;
+  const isGain = gain >= 0;
+  const sign = isGain ? '+' : '';
+
+  const prevInvested = document.getElementById('pm-prev-invested');
+  const prevCurrent = document.getElementById('pm-prev-current');
+  const prevGain = document.getElementById('pm-prev-gain');
+
+  if (prevInvested) prevInvested.textContent = `${invested.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+  if (prevCurrent) prevCurrent.textContent = `${current.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+  if (prevGain) {
+    prevGain.className = `pm-prev-val ${isGain ? 'text-green' : 'text-red'}`;
+    prevGain.textContent = `${sign}${gain.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (${sign}${gainPct.toFixed(2)}%)`;
+  }
+}
+
+/**
  * Change d'onglet actif dans la modale
  */
 function switchPortfolioModalTab(targetTab) {
@@ -2374,21 +2437,7 @@ function switchPortfolioModalTab(targetTab) {
   if (targetTab === 'positions') renderPortfolioPositionsTab();
   if (targetTab === 'add') {
     initAddAssetTab();
-    const buyPriceInput = document.getElementById('pm-add-buy-price');
-    const sharesInput = document.getElementById('pm-add-shares');
-    const dcaInput = document.getElementById('pm-add-dca');
-    const buyDateInput = document.getElementById('pm-add-buy-date');
-    if (buyDateInput) buyDateInput.value = new Date().toISOString().split('T')[0];
-    if (sharesInput && (!sharesInput.value || parseFloat(sharesInput.value) <= 0)) sharesInput.value = '1.00';
-    if (dcaInput && !dcaInput.value) dcaInput.value = '0';
-    const select = document.getElementById('pm-add-asset-select');
-    if (select && select.value !== 'custom' && buyPriceInput) {
-      const lp = getAssetPriceInEur(select.value);
-      buyPriceInput.value = lp.toFixed(2);
-      buyPriceInput.dataset.autoFilled = 'true';
-    }
-    const evt = new Event('input', { bubbles: true });
-    sharesInput?.dispatchEvent(evt);
+    resetAddAssetForm();
   }
   if (targetTab === 'dca') renderPortfolioDcaTab();
   if (targetTab === 'history') renderPortfolioHistoryTable();
@@ -3026,7 +3075,7 @@ function renderMarketCards() {
         </div>
 
         <div class="wl-right-content">
-          <svg viewBox="0 0 60 22" class="wl-spark-mini" preserveAspectRatio="none">
+          <svg viewBox="0 0 100 32" class="wl-spark-mini" preserveAspectRatio="none">
             <path d="${linePath}" fill="none" stroke="${isPositive ? '#10b981' : '#ef4444'}" stroke-width="2.2" stroke-linecap="round" />
           </svg>
           <div class="wl-price-group">
