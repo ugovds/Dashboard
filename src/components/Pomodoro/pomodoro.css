@@ -1,0 +1,246 @@
+/* ========================================================
+   src/components/Pomodoro/pomodoro.css - Studio Focus & Carillon Zen
+   ======================================================== */
+
+.pomodoro-hub {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+/* Carte centrale Pomodoro */
+.pomodoro-card {
+  width: 100%;
+  background: var(--surface-strong);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  padding: 36px 32px;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: var(--glass-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+  position: relative;
+}
+
+.pomodoro-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pomodoro-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pomodoro-main-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: 0.05em;
+}
+
+.pomodoro-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: rgba(var(--accent-primary-rgb), 0.12);
+  border: 1px solid var(--border-subtle);
+  color: var(--accent-primary);
+}
+
+/* Sélecteur de matière / sujet */
+.pomo-subject-select {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+}
+
+/* Onglets de modes (Focus, Pause courte, Pause longue) */
+.pomo-mode-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+}
+
+.pomo-mode-btn {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pomo-mode-btn:hover {
+  color: var(--text-main);
+}
+
+.pomo-mode-btn.active {
+  background: rgba(var(--accent-primary-rgb), 0.2);
+  border-color: var(--border-highlight);
+  color: var(--accent-primary);
+  box-shadow: 0 0 14px var(--theme-glow);
+}
+
+/* ========================================================
+   ANNEAU CIRCULAIRE SVG & CHRONOMÈTRE
+   ======================================================== */
+.pomo-circle-wrap {
+  width: 260px;
+  height: 260px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.pomo-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.pomo-circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 10;
+}
+
+.pomo-circle-progress {
+  fill: none;
+  stroke: var(--accent-primary);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+  filter: drop-shadow(0 0 8px var(--accent-primary));
+}
+
+.pomo-time-center {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.pomo-digits {
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+.pomo-current-mode-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+/* Boutons de contrôle (Démarrer / Pause / Reset) */
+.pomo-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pomo-btn-main {
+  background: linear-gradient(135deg, var(--accent-primary), rgba(var(--accent-primary-rgb), 0.7));
+  border: none;
+  border-radius: 14px;
+  padding: 12px 32px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #000;
+  cursor: pointer;
+  box-shadow: 0 0 20px var(--theme-glow);
+  transition: all 0.2s ease;
+}
+
+.pomo-btn-main:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 28px var(--accent-primary);
+}
+
+.pomo-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 20px;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pomo-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  border-color: var(--border-highlight);
+}
+
+/* Barre de bas de carte (Sessions complétées & Test carillon) */
+.pomo-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.pomo-test-chime-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 4px 10px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pomo-test-chime-btn:hover {
+  color: var(--accent-primary);
+  border-color: var(--border-highlight);
+}

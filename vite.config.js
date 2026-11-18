@@ -1,48 +1,27 @@
 import { defineConfig } from 'vite';
-import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const host = process.env.TAURI_DEV_HOST;
-
-function copyStaticDirsPlugin() {
-  return {
-    name: 'copy-static-dirs',
-    closeBundle() {
-      const dirsToCopy = ['js', 'images', 'css'];
-      for (const dir of dirsToCopy) {
-        const srcDir = path.resolve(process.cwd(), dir);
-        const destDir = path.resolve(process.cwd(), 'dist', dir);
-        if (fs.existsSync(srcDir)) {
-          fs.cpSync(srcDir, destDir, { recursive: true });
-        }
-      }
-    },
-  };
-}
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  plugins: [copyStaticDirsPlugin()],
-  clearScreen: false,
+  root: path.resolve(__dirname, 'src'),
+  base: './',
   server: {
-    port: 1420,
-    strictPort: true,
-    host: host || false,
-    hmr: host
-      ? {
-          protocol: 'ws',
-          host,
-          port: 1421,
-        }
-      : undefined,
-    watch: {
-      ignored: ['**/src-tauri/**'],
-    },
+    port: 5173,
+    strictPort: false,
+    host: 'localhost',
   },
   build: {
-    target: process.env.TAURI_ENV_PLATFORM === 'windows' ? 'chrome105' : 'safari13',
-    minify: !process.env.TAURI_ENV_DEBUG ? 'esbuild' : false,
-    sourcemap: !!process.env.TAURI_ENV_DEBUG,
-    outDir: 'dist',
+    outDir: path.resolve(__dirname, 'dist'),
     emptyOutDir: true,
+    target: 'chrome120',
+    assetsDir: 'assets',
+    sourcemap: true,
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
   },
 });

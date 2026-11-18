@@ -1,23 +1,66 @@
 {
   "name": "violet-cockpit",
   "version": "5.2.0",
-  "description": "Cyberdeck / Violet Startpage Desktop Cockpit",
+  "description": "Violet Cockpit - Bureau Electron Moderne & Startpage",
+  "author": "Violet Cockpit Team",
   "private": true,
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
-    "dev": "vite",
+    "dev": "node electron/dev.js",
     "build": "vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "build:app": "vite build && electron-builder",
+    "pack": "vite build && electron-builder --dir",
+    "dist:linux": "vite build && electron-builder --linux",
+    "dist:win": "vite build && electron-builder --win",
+    "dist:mac": "vite build && electron-builder --mac",
+    "preview": "vite preview"
   },
-  "dependencies": {
-    "@tauri-apps/api": "^2.2.0",
-    "@tauri-apps/plugin-autostart": "^2.2.0",
-    "@tauri-apps/plugin-notification": "^2.2.0",
-    "@tauri-apps/plugin-opener": "^2.2.0"
+  "build": {
+    "appId": "com.violet.cockpit",
+    "productName": "Violet Cockpit",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/icons/icon.png",
+      "category": "Utility"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icons/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/icons/icon.png",
+      "category": "public.app-category.utilities"
+    }
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.2.0",
+    "electron": "^45.3.4",
+    "electron-builder": "^26.7.0",
     "vite": "^6.0.0"
   }
 }

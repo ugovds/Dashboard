@@ -1,338 +1,192 @@
-# 🌌 Cyberdeck / Violet Startpage
+# 🌌 Violet Cockpit — Dashboard de Bureau & Startpage Ultime
 
 <p align="center">
-  <img src="images/gif.gif" alt="Aperçu Startpage" width="720" style="border-radius: 12px; box-shadow: 0 10px 35px rgba(0,0,0,0.6);" />
+  <img src="assets/icons/icon.png" alt="Violet Cockpit Logo" width="128" style="border-radius: 24px; box-shadow: 0 10px 35px rgba(0,0,0,0.4);" />
 </p>
 
 <p align="center">
-  <b>Une page d'accueil (startpage) modulaire, moderne et immersive conçue pour booster votre productivité tout en sublimant votre navigateur.</b>
+  <b>Application de bureau native moderne pour Linux, Windows et macOS.</b><br>
+  <i>Un tableau de bord cockpit ultra-rapide, modulaire et fluide à 60 FPS — Zéro framework lourd, zéro serveur Python externe.</i>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
-  <img src="https://img.shields.io/badge/CSS3_Modulaire-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
-  <img src="https://img.shields.io/badge/JavaScript_Vanilla-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
-  <img src="https://img.shields.io/badge/Font_Awesome-528DD7?style=for-the-badge&logo=font-awesome&logoColor=white" alt="Font Awesome" />
-  <img src="https://img.shields.io/badge/JetBrains_Mono-000000?style=for-the-badge&logo=jetbrains&logoColor=white" alt="JetBrains Mono" />
+  <img src="https://img.shields.io/badge/Electron-45.3.4-47848F?style=for-the-badge&logo=electron&logoColor=white" alt="Electron" />
+  <img src="https://img.shields.io/badge/Vite-6.4.6-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/JavaScript-Vanilla_ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="Vanilla JS" />
+  <img src="https://img.shields.io/badge/CSS3-Variables_Natives-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
+  <img src="https://img.shields.io/badge/Plateforme-Linux_%7C_Windows_%7C_macOS-22c55e?style=for-the-badge" alt="Multi-OS" />
 </p>
 
 ---
 
-## 📸 Thèmes Visuels
+## ⚡ En Bref : Pourquoi Violet Cockpit ?
 
-La startpage intègre **5 thèmes visuels** avec éclairage ambiant (Ambilight), orbes lumineux et animations spécialisées, sélectionnables via les raccourcis clavier (<kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>, <kbd>4</kbd>, <kbd>5</kbd>) ou dans le centre de configuration :
+**Violet Cockpit** est une refonte intégrale de votre environnement de démarrage et de productivité sous forme d'**application de bureau Electron native**. Conçu pour un démarrage instantané (< 200 ms) et une empreinte mémoire minimale (< 90 Mo de RAM), il réunit tout votre univers de travail au même endroit :
 
-| Thème 1 : Kanagawa 🌊 | Thème 2 : Sakura 🌸 | Thème 3 : Cyberdeck ⚡ | Thème 4 : Retro Wave 🎮 | Thème 5 : Liquid Glass 💎 |
-| :---: | :---: | :---: | :---: | :---: |
-| <img src="images/gif.gif" width="150" /> | <img src="images/gif2.webp" width="150" /> | <img src="images/gif3.webp" width="150" /> | <img src="images/gif4.gif" width="150" /> | <img src="images/glass.svg" width="150" /> |
-| *Cyan & Menthe froide* | *Rose & Néo-Pastel* | *Violet & Néon Cyberdeck* | *Monochrome Ukiyo & 8-Bit* | *Apple Liquid Glass & Reflets* |
-
-### 💎 Mode Apple Liquid Glass (Thème 5)
-Inspiré du design **Apple Liquid Glass / VisionOS** :
-- **Matériaux en verre dépoli ultra-translucide** (`backdrop-filter: blur(28px) saturate(210%)`), reflets spéculaires intérieurs et bordures prismatiques.
-- **Animations spécialisées** :
-  - *Morphing d'orbes liquides* organiques (`liquidOrbMorph`) dérivant en arrière-plan.
-  - *Balayage spéculaire caustique* (`liquidSpecularSweep`) lumineux survolant les cartes.
-  - *Respiration en apesanteur* (`liquidGlassFloat`) des surfaces en verre.
-  - *Ondulation liquide interactive* (`glass-click-ripple`) au clic sur les éléments.
-- **Variantes de contraste intégrées** ("Thèmes dans le thème") :
-  - 🟣 **Glass Violet** (Améthyste liquide)
-  - 🔵 **Glass Bleu** (Saphir Apple / Azure)
-  - 🟢 **Glass Vert** (Émeraude / Mint liquide)
-  - ⚪ **Glass Transparent** (Pur Crystal VisionOS ultra-clair)
-  - 🔴 **Glass Rouge** (Rubis liquide / Sunset)
-  - 🟡 **Glass Ambre** (Or & Miel champagne)
-  - 🌐 **Glass Cyan** (Lagon glacé)
-  - 🌸 **Glass Rose** (Quartz néon liquide)
+- 🚀 **100% Autonome** : Plus besoin de serveur Python en arrière-plan (`runner.py`) ; toutes les requêtes (marchés financiers, flux RSS, météo, persistance JSON) s'exécutent de façon native et sécurisée dans le **Processus Principal d'Electron** sans aucune restriction CORS.
+- 🎨 **5 Thèmes Haute Définition** : Verre dépoli *Liquid Glass* (style Apple VisionOS), *Cyberdeck* (Violet/Néon), *Sakura* (Néo-pastel), *Kanagawa* (Cyan & Menthe) et *Retro Wave* (Monochrome 8-bit).
+- ⚡ **Performance Périphérique Pure** : Zéro framework lourd (React, Angular, Vue). Que du **Vanilla JavaScript moderne** et du **CSS3 natif**, garantissant une fluidité constante à 60 FPS.
+- 🛡️ **Intégration OS Sécurisée** : Minimisation dans la barre des tâches (System Tray), raccourcis clavier globaux, notifications système natives de bureau et ouverture des liens web externes dans votre navigateur par défaut via `shell.openExternal`.
 
 ---
 
-## 📐 Architecture de l'Interface (Cockpit Dashboard avec Menu Latéral)
+## 🧭 Fonctionnalités & Modules Embarqués
 
-Le tableau de bord est structuré en **Dashboard moderne de type cockpit** avec navigation latérale et topbar HUD discrète :
+### 1. 🏠 Station d'Accueil & Lanceur Web
+- **Station Horloge Orbitron** : Heure grand format, date complète en français, barre de progression dynamique de la journée (%) et cycle solaire.
+- **Omnibox Universelle de Recherche** :
+  - Support de **10 raccourcis Bangs rapides** : `!g` (Google), `!yt` (YouTube), `!w` (Wikipédia), `!d` (DuckDuckGo), `!gh` (GitHub), `!tr` (Traduction), `!maps` (Google Maps), `!img` (Images), `!so` (Stack Overflow), `!r` (Reddit).
+  - Évaluateur mathématique direct (`120 * 45 = 5 400`).
+  - Raccourci focus instantané : <kbd>/</kbd> ou <kbd>Ctrl+K</kbd>.
+- **Grille de Signets par Catégories** : Liens rapides organisés en 4 univers (Développement, Finance & Crypto, Social & Médias, Outils & Utilitaires) ouvrant directement dans votre navigateur système.
 
-1. **Menu Latéral Gauche (Sidebar Slim & Rétractable)** :
-   - Mode compact par défaut avec icônes épurées (~68px) et infobulles flottantes (tooltips).
-   - Dépliable par survol ou verrouillable en mode étendu via le bouton chevron.
-   - **Navigation rapide aux flèches clavier (<kbd>↑</kbd> / <kbd>↓</kbd>)** permettant de basculer instantanément d'un onglet à l'autre.
-   - Indicateur lumineux vertical glissant avec animation fluide.
-   - Actions rapides : Mode Nuit / Atténuation HUD (<kbd>Ctrl+Shift+D</kbd>), cyclage de thème et palette de commandes (<kbd>Ctrl+K</kbd>).
+### 2. 📈 Marchés Financiers & Portefeuille Boursier (Sans Python)
+- **Passerelle Directe Yahoo Finance & CoinGecko** intégrée dans Electron : contournement automatique du CORS avec cache mémoire intelligent (TTL 3 minutes).
+- **9 Actifs Majeurs Surveillés** : Actions US (NVDA, TSLA, AAPL, MSFT), ETF PEA & Europe (10AP, CW8, LYP6, XMME), Indices (S&P 500, Nasdaq, CAC 40), Or, Bitcoin et Ethereum.
+- **Hero Bento Spotlight** : Tracé vectoriel SVG lissé (`spline`) de la courbe des dernières 24h avec survol dynamique au curseur.
+- **Gestionnaire de Portefeuille** : Calcul en direct de la valorisation globale (€), de la plus-value latente (€ et %) et tableau détaillé des lignes d'actifs.
 
-2. **Topbar HUD Minimaliste** :
-   - Titre et icône dynamique de l'onglet actif.
-   - Déclencheur rapide de recherche (<kbd>/</kbd>).
-   - Pastilles interactives de télémétrie : météo en direct, bouton play/pause audio Lo-Fi et nom du thème actif.
+### 3. 📅 Organisation & Santé (Agenda, Tâches, Météo & Focus)
+- **Agenda & To-Do List** : Mini-calendrier mensuel avec puces d'échéances et gestionnaire de tâches (priorités 🔴 Urgent, 🟡 Normal, 🟢 Faible, filtres par statut et accomplissement dynamique).
+- **Station Météo Open-Meteo** : 100% ouverte sans clé API, métriques en direct (ressenti, vent, humidité, pluie), courbe thermique 24h et prévisions sur 3 jours.
+- **Studio Focus Pomodoro** : Minuteur circulaire SVG (presets 25m Focus / 5m Pause / 15m Longue), **carillon harmonique Zen synthétisé via la Web Audio API** (accord accordé sur 432 Hz) et **notifications système natives de l'OS** dès la fin d'un cycle.
 
-3. **Espace de Travail Spacieux (10 Vues Plein Format)** :
-   - **Accueil (Vue Générale)** : Barre Omnibox + Grande station horloge HUD + Grille spacieuse des signets et catégories.
-   - **Agenda & Tâches** : Calendrier mensuel interactif à gauche et To-Do list complète à droite.
-   - **Météo & Radar** : Courbe de température & pluie 24h, métriques détaillées, prévisions sur 3j et radar satellite en direct.
-   - **Actualités** : Lecteur de flux d'actualités F1, Football, Tech et vos flux RSS sur mesure.
-   - **Système & Marchés** : Suivi indiciel en temps réel, valorisation de portefeuille multi-actifs (10AP, LYP6, XMME, NVDA), moteur d'automatisation DCA du 19 du mois et graphique interactif d'évolution (24h, 1 semaine, 1 mois, 1 an).
-   - **Focus Pomodoro** : Minuteur circulaire avec presets, carillon et jalons de session.
-   - **Bloc-Notes Markdown** : Éditeur rapide, scratchpad, rendu Markdown en direct et export de fichiers .md. Passerelle marchés en temps réel via `./runner.py`.
-   - **Ambiance Lo-Fi** : Synthèse audio procédurale et radio avec visualiseur Canvas.
-   - **Citations** : Citations de culture hacker, dev et cyberpunk.
-   - **Paramètres** : Centre complet de personnalisation des thèmes, de l'horloge et sauvegarde JSON.
+### 4. 📝 Outils Studio (Bloc-Notes, RSS & Audio Lo-Fi)
+- **Bloc-Notes Markdown Studio** : Éditeur multi-documents (`notes.md`, `scratchpad.md`), barre d'insertion rapide, prévisualisation formatée en direct, statistiques (mots, caractères, lignes) et **export direct en fichier `.md` local** via le sélecteur natif de l'OS.
+- **Lecteur de Flux RSS Natif** : 5 canaux prédéfinis (Hacker News, Numerama, Le Soir, Le Monde, Formule 1), cartes d'articles modernes et redirection vers la source en un clic.
+- **Ambiance Audio Lo-Fi Procédurale** : Générateurs sonores sans aucun fichier externe (Pluie apaisante, Bruit Brun de café d'automne, Vagues Zen 432 Hz) avec visualiseur spectral Canvas à 60 FPS.
 
----
-
-## ✨ Fonctionnalités
-
-### ⏱️ Station Horloge Cyberdeck (Chrono-HUD) — `js/clock.js`
-- **Cadran central interactif** :
-  - Arc circulaire des secondes SVG avec animation continue à 60 FPS.
-  - Micro-compteur de millisecondes (`.ms`) et repères cardinaux tachymétriques.
-  - Horloge au format 24h ou 12h avec pastille AM/PM.
-- **Télémétrie calendaire & solaire** :
-  - Affichage complet de la date en français.
-  - Puces télémétriques : numéro de semaine (`Sem. 45`), jour de l'année (`Jour 308/365`) et cycle solaire dynamique (☀️ Diurne / 🌙 Nocturne).
-- **Progression de la journée (%)** :
-  - Jauge visuelle animée avec pourcentage exact et calcul en temps réel du temps restant (`Xh Ym restants`).
-- **Sélecteur de fuseaux horaires** :
-  - Défilement au clic ou sélection par menu : Local (Paris), Tokyo (JST), New York (EST), Londres (GMT), UTC.
-- **Typographies & Styles au choix** :
-  - 5 polices : *JetBrains Mono*, *Orbitron*, *Share Tech Mono*, *VT323*, *Inter*.
-  - 6 styles de cadre : *HUD Cyberdeck*, *Lueur Intense Néon*, *Digital Box LCD*, *Pilule Verre*, *Crochets Cyber [ ]*, *Minimaliste*.
-
-### 📅 Agenda & Gestionnaire de Tâches — `js/calendar.js` & `js/tasks.js`
-- **Mini-calendrier mensuel interactif** :
-  - Navigation par mois avec bouton de retour à aujourd'hui.
-  - Badges du nombre de tâches incrustés directement sur chaque jour du calendrier.
-  - Clic sur un jour pour filtrer immédiatement la liste des tâches sur cette date précise.
-- **Gestionnaire de tâches (To-Do List)** :
-  - Ajout rapide avec libellé et date d'échéance optionnelle.
-  - Calcul dynamique des échéances : `Auj.`, `Demain`, `J-X` (à venir), `J+X` (en retard).
-  - Onglets de filtrage rapide : `Toutes`, `À faire`, `Faites`.
-  - Mini-jauge de progression globale indiquant le ratio de tâches complétées (`X / Y`).
-  - Vue d'état vide ergonomique lors de l'accomplissement de toutes les tâches.
-
-### 🔍 Barre de Recherche Intelligente (Omnibox) — `js/search.js`
-- **Raccourci clavier instantané** : Touche <kbd>/</kbd> pour cibler immédiatement le champ de recherche.
-- **Moteurs de recherche & Préfixes rapides (Bangs)** :
-  - `!yt <requête>` : YouTube
-  - `!gh <requête>` : GitHub
-  - `!tr <texte>` : Traduction DeepL
-  - `!maps <lieu>` : Google Maps
-  - `!img <terme>` : Google Images
-  - `!w <terme>` : Wikipédia
-  - `!d <requête>` : DuckDuckGo
-  - `!so <requête>` : StackOverflow
-  - `!arch <sujet>` : ArchWiki
-  - `!r <terme>` : Reddit
-  - `!help` : Afficher l'aide des commandes
-- **Calculatrice en direct** : Évalue les expressions mathématiques (`15 * 4`, `(120/4) + 8`) instantanément pendant la frappe.
-- **Suggestions de recherche** : Autocomplétion Google navigable au clavier avec les flèches <kbd>↑</kbd> et <kbd>↓</kbd>.
-
-### ⚡ Grille des Signets & Catégories — `js/bookmarks.js`
-- **Densité adaptative automatique** : Ajustement dynamique de la taille et de l'espacement pour afficher plus de 6 liens par catégorie sans déborder.
-- **Ajout & Gestion complète** : Création, modification et suppression de catégories et de liens avec sélection d'icônes Font Awesome.
-- **Glisser-Déposer (Drag & Drop)** : Réorganisation libre des liens au sein d'une même catégorie ou déplacement d'une catégorie à l'autre.
-- **Export & Import JSON** : Sauvegarde intégrale en 1 clic de votre configuration dans un fichier `.json` et restauration immédiate.
-
-### 🌤️ Station Météo Complète & Effets Canvas — `js/weather.js` & `js/weather-fx.js`
-- **Données en direct** : Température actuelle, température ressentie, humidité, vitesse du vent, indice UV.
-- **Prévisions à 3 jours** avec températures minimales et maximales.
-- **Recherche de ville & Géolocalisation** : Recherche manuelle par nom de ville ou détection automatique de localisation par IP.
-- **Effets météo d'arrière-plan** : Particules Canvas réactives (pluie, neige, orage, brume, ciel étoilé) avec interrupteur ON/OFF.
-
-### ⏱️ Minuteur Focus / Pomodoro — `js/widgets.js`
-- Cadran circulaire avec anneau de progression SVG.
-- Modes de travail prédéfinis : Focus (25m), Pause courte (5m), Pause longue (15m).
-- Boutons de presets d'intervalles : `25/5 Standard`, `50/10 Deep Work`, `15/3 Sprint`.
-- Compteur de sessions et objectif journalier représenté par 4 jalons visuels.
-- Carillon harmonique Web Audio à l'achèvement de chaque session.
-
-### 📝 Bloc-Notes Instantané (Scratchpad) — `js/widgets.js`
-- Zone de saisie rapide plein format avec auto-sauvegarde continue dans `localStorage`.
-- Compteur en temps réel des mots et des caractères.
-- Actions directes : copier dans le presse-papier, exporter au format `.txt`, et effacer.
-
-### 🎧 Ambiance Sonore Procédurale & Lo-Fi — `js/widgets.js`
-- 6 ambiances audio au choix :
-  - 🌧️ Pluie Cyber (Pluie douce synthétisée)
-  - ☕ Lo-Fi Synth (Lounge relax)
-  - 🌌 Deep Space (Bruit brun spatial profond)
-  - ⚡ Orage Néon (Pluie et tonnerre)
-  - 📻 Radio Lo-Fi (Flux radio continu chillhop)
-  - 🍃 Nuit Synthé (Brise nocturne et résonance)
-- Visualiseur de spectre audio animé sur Canvas et réglage précis du volume.
-
-### 📈 Hub Marchés, Watchlist Studio & Portefeuille DCA — `js/markets.js` & `css/markets.css`
-- **Architecture de l'onglet Marchés en 2 sections complémentaires** :
-  1. **Haut de page — Watchlist Studio en 2 colonnes (Façon Terminal Boursier / TradingView)** :
-     - **Colonne Gauche (Liste des actifs & filtres)** :
-       - Recherche textuelle instantanée (`NVDA`, `10AP`, `BTC`...) et filtrage rapide par catégorie (*Tous, Actions, ETF, Indices, Cryptos, Volatiles*).
-       - Badge dynamique du nombre d'actifs suivis.
-       - Accès rapide à la personnalisation de la watchlist et bouton d'actualisation des cotations en direct.
-       - Liste ergonomique et réactive des titres affichant l'icône de type, le nom complet, le symbole boursier, la place de cotation, le dernier cours, la variation 24h et la mini-sparkline vectorielle.
-       - Sélection interactive instantanée : un clic sur n'importe quel actif met la ligne en surbrillance et actualise immédiatement le graphique grand format de la colonne droite.
-     - **Colonne Droite (Graphique interactif correspondant à l'actif sélectionné)** :
-       - En-tête complet du titre sélectionné : icône, nom de l'actif, symbole, badge en direct, place boursière et devise.
-       - Dernier cours grand format, badge de variation 24h et fourchette de séance (plus bas / plus haut) avec jauge de positionnement journalier.
-       - Raccourcis rapides des favoris (`NVDA`, `10AP`, `LYP6`, `XMME`, `BTC`).
-       - Grand graphique SVG 24h interactif avec tracé Bézier cubique, surface dégradée lumineuse, ligne de référence horizontale, réticule de suivi magnétique au survol et infobulle temps réel.
-       - 4 indicateurs clés au pied du graphique : *Volume 24h*, *Capitalisation boursière*, *Séance & Devise*, *Fourchette de séance*.
-       - Bouton `Agrandir` pour ouvrir la modale plein écran détaillée.
-
-  2. **Bas de page — Suivi de Portefeuille Multi-Actifs & Moteur DCA Automatique** :
-     - **Indicateurs financiers consolidés (4 KPIs)** :
-       - **Valeur Globale Totale** (€) et variation pondérée sur les dernières 24 heures.
-       - **Plus-Value Latente Totale** (€ et %) calculée avec précision sur les **1 513,24 € d'apports initiaux** investis.
-       - **Prochain Versement DCA** : Date du 19 du mois et décompte dynamique du nombre de jours restants jusqu'au versement de 60,00 €.
-       - **Règle DCA Mensuelle** : Répartition de 60,00 € / mois (30€ 10AP, 20€ LYP6, 10€ XMME, soit 720 € investis par an).
-     - **Grand Graphique Multi-Périodes du Portefeuille** :
-       - 4 horizons d'analyse temporelle : **24H**, **1 Semaine**, **1 Mois** (avec palier d'injection DCA du 19) et **1 Année** (visualisation de l'effet boule de neige du DCA).
-       - Bandeau de statistiques de la période : plus bas, plus haut, capital investi et nombre de versements DCA sur l'horizon sélectionné.
-     - **Répartition & Allocation d'actifs** : Jauge visuelle d'allocation (10AP: 38.6%, LYP6: 29.7%, XMME: 20.8%, NVDA: 10.9%).
-     - **Les 4 fiches de positions détaillées** :
-       - `10AP` (Amundi PEA S&P 500) : 4.19 parts, cours unitaire, valeur totale, plus-value et badge `+30€/mois`.
-       - `LYP6` (Amundi Stoxx Europe 600) : 1.35 parts, cours unitaire, valeur totale, plus-value et badge `+20€/mois`.
-       - `XMME` (Xtrackers MSCI Emerging Markets) : 4.03 parts, cours unitaire, valeur totale, plus-value et badge `+10€/mois`.
-       - `NVDA` (NVIDIA Corporation) : 1 action (position fixe), valorisation en direct intégrant la conversion EUR/USD.
-     - **Actions & Simulation DCA** :
-       - Bouton `⚡ Simuler Versement du 19` pour exécuter immédiatement une mensualité (+60 €).
-       - Modale de gestion avancée pour éditer manuellement les positions et consulter le journal horodaté des versements.
-       - Bouton de réinitialisation pour restaurer les paramètres initiaux.
-
-- **Squelettes de Chargement GPU & Zéro Décalage Visuel** :
-  - Intégration dans le système de préchargement coordonné `PageSkeletonManager` (`css/skeletons.css`).
-  - Squelette reproduisant fidèlement l'agencement 2 colonnes en haut et le bloc portefeuille en bas.
-
-### ⚡ Moniteur Système & Télémétrie — `js/widgets.js`
-- Télémétrie système : Latence ping réseau (ms), statut d'alimentation (AC / Batterie), nombre de cœurs CPU, mémoire vive (RAM), et temps de session (uptime).
-
-### 💬 Citations Cyberpunk & Motivation — `js/widgets.js`
-- Sélection de citations issues de la science-fiction, de la culture hacker et de la philosophie dev (Blade Runner, Ghost in the Shell, Matrix, Neuromancer).
-- Bouton de tirage aléatoire et copie rapide dans le presse-papier.
-
-### ⚙️ Centre de Configuration Intégré — `js/custom-hub.js`
-- Accès direct via l'onglet **Config** de la colonne droite :
-  - **Apparence** : Choix des 3 thèmes, 10 palettes rapides, sélecteurs de couleurs personnalisés, intensité de l'Ambilight, scanlines rétro, avec aperçu en temps réel sur la page.
-  - **Horloge** : Choix de la police, du style de cadre, des formats d'heure et de date, et des fuseaux horaires.
-  - **Signets** : Gestion complète des catégories et favoris.
-  - **Widgets** : Activation et désactivation individuelle de chaque widget.
-  - **Flux RSS** : Gestion et validation d'URL pour vos flux d'actualités sur mesure.
-  - **Sauvegarde** : Téléchargement du fichier de configuration JSON, restauration et remise à zéro.
+### 5. ⚙️ Centre de Contrôle & Sauvegarde JSON
+- **Personnalisation Complète** : Format de l'horloge (24h/12h, affichage des secondes), ville météo par défaut, moteur de recherche principal.
+- **Persistance Centrale (Store JSON)** : Emplacement standardisé de l'OS (`~/.config/Electron/violet-store.json` sous Linux, `%APPDATA%` sous Windows).
+- **Export & Import JSON** : Sauvegarde et restauration universelle de toute votre configuration en un clic.
+- **Télémétrie Système** : Diagnostic en temps réel de votre configuration matérielle (OS, CPU, RAM, versions logicielles et uptime).
 
 ---
 
-## 🏗️ Structure du Projet
-
-```text
-violet-startpage/
-├── index.html                  # Structure HTML cyberdeck 3 colonnes
-├── README.md                   # Documentation complète du projet
-├── .gitignore                  # Fichiers exclus de Git
-│
-├── css/                        # Feuilles de styles
-│   ├── style.css               # Styles de base, Bento Grid, widgets et responsive
-│   ├── markets.css             # Hub Marchés, Portefeuille indiciel & Graphiques SVG
-│   ├── skeletons.css           # Système coordonné de préchargement squelette GPU
-│   └── themes/                 # Thèmes visuels
-│       ├── kanagawa.css        # Thème 1 : Kanagawa (Cyan / Menthe froide)
-│       ├── sakura.css          # Thème 2 : Sakura (Rose / Néo-pastel)
-│       ├── cyberdeck.css       # Thème 3 : Cyberdeck (Néon violet & cyan)
-│       ├── retrowave.css       # Thème 4 : Retro Wave (Monochrome Ukiyo & 8-Bit)
-│       └── glass.css           # Thème 5 : Apple Liquid Glass & nuances de contraste
-│
-├── images/                     # Graphismes et artworks des thèmes
-│   ├── glass.svg               # Artwork vectoriel Liquid Glass
-│   └── gif*.gif                # Fonds et badges animés des thèmes 1-4
-│
-├── js/                         # Modules JavaScript
-│   ├── app.js                  # Point d'entrée de l'application
-│   ├── markets.js              # Marchés, valorisation portefeuille & moteur DCA
-│   ├── themes.js               # Gestionnaire des thèmes
-│   ├── appearance.js           # Personnalisation des couleurs, ambilight et scanlines
-│   ├── clock.js                # Station horloge HUD, arc radial, cycle solaire & fuseaux
-│   ├── calendar.js             # Mini-calendrier mensuel avec badges de tâches
-│   ├── tasks.js                # To-Do list, échéances et filtrage
-│   ├── search.js               # Omnibox : moteur, calculatrice, bangs & autocomplétion
-│   ├── bookmarks.js            # Signets adaptatifs, Drag & Drop & Export/Import JSON
-│   ├── weather.js              # Station météo in-deck & géolocalisation
-│   ├── weather-fx.js           # Effets météo dynamiques sur Canvas
-│   ├── widgets.js              # Widgets (Pomodoro, Notes, Ambiance, Système, Quotes)
-│   ├── feeds.js                # Flux d'actualités en direct & flux RSS personnalisés
-│   ├── custom-hub.js           # Centre de configuration in-deck & navigation à 9 vues
-│   └── shortcuts.js            # Raccourcis clavier globaux
-│
-└── images/                     # Médias et animations des thèmes
-    ├── gif.gif                 # Artwork Thème 1 (Kanagawa)
-    ├── gif2.gif                # Artwork Thème 2 (Sakura)
-    ├── gif3.gif                # Artwork Thème 3 (Cyberdeck)
-    ├── gif4.gif                # Artwork Thème 4 (Retro Wave)
-    └── gif_origin.gif
-```
-
----
-
-## ⌨️ Raccourcis Clavier
+## ⌨️ Raccourcis Clavier du Cockpit
 
 | Raccourci | Action |
-| :--- | :--- |
-| <kbd>↑</kbd> / <kbd>↓</kbd> | Naviguer entre les onglets de la sidebar (quand aucun champ texte n'est actif) |
-| <kbd>Alt+1</kbd> à <kbd>Alt+0</kbd> | Accès direct aux 10 onglets du Dashboard |
-| <kbd>/</kbd> | Activer la barre de recherche Omnibox |
-| <kbd>Ctrl+K</kbd> ou <kbd>B</kbd> | Ouvrir la palette de commandes globale |
-| <kbd>Ctrl+Shift+D</kbd> | Basculer le mode Nuit / Atténuation HUD |
-| <kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>, <kbd>4</kbd> | Basculer instantanément entre les 4 thèmes visuels |
-| <kbd>T</kbd> | Ajouter rapidement une tâche (active l'agenda et cible le champ) |
-| <kbd>Entrée</kbd> | Valider une recherche, ajouter une tâche ou enregistrer |
-| <kbd>Échap</kbd> | Fermer les modales ou quitter le champ actif |
+|---|---|
+| <kbd>1</kbd> | Accueil Cockpit (Horloge, Omnibox & Signets) |
+| <kbd>2</kbd> | Signets & Web plein format |
+| <kbd>3</kbd> | Agenda & Gestionnaire de Tâches |
+| <kbd>4</kbd> | Station Météo & Prévisions |
+| <kbd>5</kbd> | Marchés Boursiers & Portefeuille |
+| <kbd>6</kbd> | Studio Focus Pomodoro |
+| <kbd>7</kbd> | Bloc-Notes Markdown Studio |
+| <kbd>8</kbd> | Flux d'Actualités RSS & Audio Lo-Fi |
+| <kbd>0</kbd> | Centre de Contrôle & Paramètres |
+| <kbd>T</kbd> | Cycler instantanément entre les 5 thèmes visuels |
+| <kbd>/</kbd> ou <kbd>Ctrl+K</kbd> | Activer et placer le focus sur l'Omnibox |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Naviguer entre les vues dans l'ordre de la Sidebar |
 
 ---
 
-## 🚀 Installation & Utilisation
+## 🛠️ Installation & Démarrage
 
-### Option A : Utilisation locale (Recommandée)
-1. Clonez ce dépôt ou téléchargez l'archive :
-   ```bash
-   git clone https://github.com/ugovds/startup_page.git
-   ```
-2. Ouvrez le fichier `index.html` dans votre navigateur Web (Firefox, Chrome, Brave, Edge...).
-3. Pour l'assigner comme page d'accueil ou nouvel onglet :
-   - Utilisez une extension telle que **New Tab Override** ou **Custom New Tab URL**.
-   - Renseignez l'URL locale : `file:///chemin/vers/index.html`.
+### Prérequis
+- [Node.js](https://nodejs.org/) (version 18.x ou supérieure recommandée)
+- `npm` (inclus avec Node.js)
 
-### Option B : Déploiement en ligne gratuit (GitHub Pages)
-1. Rendez-vous sur votre dépôt GitHub : [https://github.com/ugovds/startup_page](https://github.com/ugovds/startup_page).
-2. Ouvrez **Settings** > **Pages**.
-3. Sous **Branch**, sélectionnez `main` et le dossier `/ (root)`, puis validez avec **Save**.
-4. Votre startpage sera accessible en ligne à l'adresse :
-   ```text
-   https://ugovds.github.io/startup_page/
-   ```
-
----
-
-## ⚡ Moteur d'Exécution Local & Compilateurs Natifs (`./runner.py`)
-
-Pour exécuter instantanément votre code (C, Java, Python, Oz, JS, Bash) directement avec les compilateurs de votre PC en **10 à 25 ms** (comme dans VS Code ou IntelliJ) :
-
+### 1. Cloner le Répertoire
 ```bash
-./runner.py
-# ou : python3 runner.py 3000
+git clone https://github.com/ugovds/Dashboard.git
+cd Dashboard
 ```
 
-Ouvrez ensuite [http://localhost:3000](http://localhost:3000) dans votre navigateur.
-Le dashboard détecte automatiquement vos compilateurs natifs (`/usr/bin/gcc`, `/usr/bin/javac`, `/usr/bin/python3`, `/usr/bin/ozc`) et route toutes les exécutions localement.
+### 2. Installer les Dépendances
+```bash
+npm install
+```
+
+### 3. Lancer en Mode Développement
+```bash
+npm run dev
+```
+> Le script démarre Vite, capture dynamiquement le port disponible et lance la fenêtre Electron native avec rechargement instantané (HMR).
 
 ---
 
-## 🎨 Création d'un Nouveau Thème
+## 📦 Compilation & Packaging pour la Distribution
 
-Pour ajouter un thème supplémentaire :
-1. Créez un fichier `css/themes/mon-theme.css` avec vos variables CSS :
-   ```css
-   body[data-theme="4"] {
-     --bg-deep: #0a0e14;
-     --accent-primary: #ffaa00;
-     --accent-secondary: #00e5ff;
-     --surface: rgba(10, 14, 20, 0.75);
-     --border-subtle: rgba(255, 170, 0, 0.15);
-     --border-highlight: rgba(255, 170, 0, 0.45);
-   }
-   ```
-2. Liez le fichier dans `index.html`.
-3. Déclarez le nom du thème et son artwork dans `js/themes.js`.
+Violet Cockpit utilise **Electron Builder** pour compiler et empaqueter l'application en un fichier installable ou exécutable autonome :
+
+### Compiler le frontend pour la production
+```bash
+npm run build
+```
+*(Génère un bundle ultra-léger dans `dist/` : ~113 kB de JavaScript et ~67 kB de CSS).*
+
+### Tester l'exécutable local sans packaging lourd
+```bash
+npm run pack
+```
+*(Produit le binaire autonome dans le dossier `release/linux-unpacked/violet-cockpit`).*
+
+### Générer les installateurs de production
+
+#### 🐧 Linux (AppImage & deb)
+```bash
+npm run dist:linux
+```
+Génère une image portable universelle `.AppImage` (lançable sans installation sur toutes les distributions) et un paquet `.deb` pour Debian / Ubuntu.
+
+#### 🪟 Windows (NSIS & Portable)
+```bash
+npm run dist:win
+```
+Génère un installateur moderne `.exe` (NSIS avec raccourci bureau) et une version portable exécutable directement.
+
+#### 🍏 macOS (DMG & Zip)
+```bash
+npm run dist:mac
+```
+Génère une image disque standard `.dmg` et une archive `.zip`.
+
+---
+
+## 📂 Structure du Codebase
+
+```text
+Dashboard/
+├── assets/
+│   └── icons/                 # Icônes de l'application (PNG standard & Tray)
+├── electron/
+│   ├── main.js                # Processus principal : Fenêtre, Tray, IPC natifs
+│   ├── dev.js                 # Orchestrateur de démarrage (Vite + Electron)
+│   ├── preload.cjs            # Pont sécurisé contextBridge (CommonJS)
+│   ├── preload.js             # Copie miroir
+│   ├── store.js               # Gestionnaire de persistance JSON local
+│   └── services/
+│       ├── finance.js         # Passerelle Yahoo Finance & CoinGecko (0 CORS)
+│       └── rss.js             # Agrégateur et parseur de flux RSS natif
+├── src/
+│   ├── index.html             # Point d'entrée ultra-épuré (< 50 lignes)
+│   ├── main.js                # Initialisation de l'application côté client
+│   ├── styles/
+│   │   ├── base.css           # Reset moderne, typographies et utilitaires
+│   │   └── themes/            # Les 5 palettes de couleurs CSS natives
+│   └── components/
+│       ├── Layout/            # Sidebar rétractable, Topbar HUD, Viewport
+│       ├── Clock/             # Station Horloge Orbitron & cycle solaire
+│       ├── Omnibox/           # Barre de recherche intelligente avec bangs
+│       ├── Bookmarks/         # Grille de signets par catégories
+│       ├── Markets/           # Tickers, Hero Bento 24h & Portefeuille
+│       ├── Agenda/            # Mini-calendrier & To-Do List
+│       ├── Weather/           # Météo Open-Meteo & prévisions
+│       ├── Pomodoro/          # Minuteur Focus, carillon Zen & notifications OS
+│       ├── Notes/             # Studio d'écriture Markdown & export .md
+│       ├── Feeds/             # Lecteur RSS & Ambiance audio Lo-Fi
+│       └── Settings/          # Centre de Contrôle, sauvegarde & télémétrie
+├── package.json               # Scripts de build et configuration electron-builder
+└── vite.config.js             # Configuration du bundler Vite 6
+```
+
+---
+
+## 📄 Licence & Crédits
+
+- Conçu avec passion par **ugovds**.
+- Typographies : *Orbitron* & *Inter*.
+- Icônes & graphismes vectoriels originaux.

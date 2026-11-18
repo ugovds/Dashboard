@@ -1,0 +1,298 @@
+/* ========================================================
+   src/components/Notes/notes.css - Bloc-Notes Markdown Studio
+   ======================================================== */
+
+.notes-hub {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: calc(100vh - 110px);
+}
+
+/* En-tête avec onglets et boutons d'action */
+.notes-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.notes-tabs-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.note-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.note-tab-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-main);
+}
+
+.note-tab-btn.active {
+  background: rgba(var(--accent-primary-rgb), 0.18);
+  border-color: var(--border-highlight);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.note-tab-close {
+  font-size: 0.72rem;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.note-tab-close:hover {
+  opacity: 1;
+  color: #f43f5e;
+}
+
+.note-new-tab-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--border-subtle);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.note-new-tab-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* Barre d'outils Markdown & Actions */
+.notes-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-tool-btn {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notes-tool-btn:hover {
+  background: rgba(var(--accent-primary-rgb), 0.15);
+  color: var(--text-main);
+  border-color: var(--border-highlight);
+}
+
+.notes-tool-btn.active {
+  background: var(--accent-primary);
+  color: #000;
+  font-weight: 700;
+}
+
+.notes-export-btn {
+  background: linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.25), rgba(var(--accent-secondary-rgb), 0.2));
+  border: 1px solid var(--border-highlight);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notes-export-btn:hover {
+  background: var(--accent-primary);
+  color: #000;
+  box-shadow: 0 0 12px var(--accent-primary);
+}
+
+/* Zone d'édition / Conteneur principal */
+.notes-editor-frame {
+  flex: 1;
+  background: var(--surface-strong);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Barre d'insertion rapide de syntaxe Markdown */
+.markdown-quick-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+
+.md-insert-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.md-insert-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  border-color: var(--border-subtle);
+}
+
+/* Zone centrale (Split ou bascule : Éditeur vs Rendu) */
+.notes-content-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+}
+
+.notes-textarea {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 20px 24px;
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text-main);
+  resize: none;
+  caret-color: var(--accent-primary);
+  overflow-y: auto;
+}
+
+/* Zone de prévisualisation Markdown stylisée */
+.notes-preview-pane {
+  width: 100%;
+  height: 100%;
+  padding: 24px 30px;
+  overflow-y: auto;
+  line-height: 1.7;
+  color: var(--text-main);
+}
+
+.notes-preview-pane h1 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  margin-bottom: 12px;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 6px;
+}
+
+.notes-preview-pane h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin: 16px 0 8px 0;
+  color: var(--text-main);
+}
+
+.notes-preview-pane h3 {
+  font-size: 1.1rem;
+  margin: 12px 0 6px 0;
+  color: var(--accent-primary);
+}
+
+.notes-preview-pane p {
+  margin-bottom: 12px;
+  color: #cbd5e1;
+}
+
+.notes-preview-pane blockquote {
+  border-left: 3px solid var(--accent-primary);
+  padding: 8px 14px;
+  background: rgba(var(--accent-primary-rgb), 0.08);
+  border-radius: 0 8px 8px 0;
+  margin: 12px 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.notes-preview-pane ul,
+.notes-preview-pane ol {
+  padding-left: 24px;
+  margin-bottom: 12px;
+}
+
+.notes-preview-pane li {
+  margin-bottom: 4px;
+  color: #cbd5e1;
+}
+
+.notes-preview-pane pre {
+  background: #040508;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  overflow-x: auto;
+  margin: 12px 0;
+  color: #e2e8f0;
+}
+
+.notes-preview-pane code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent-primary);
+}
+
+/* Barre de statut inférieure */
+.notes-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="liquid-glass">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Violet Cockpit</title>
+
+    <!-- Polices Google non-bloquantes (Inter, JetBrains Mono, Orbitron) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@700;800;900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body data-theme="liquid-glass">
+    <div id="app">
+      <!-- Fond d'ambiance avec orbes volumétriques accélérés par GPU -->
+      <div class="cockpit-ambient-backdrop" aria-hidden="true">
+        <div class="ambient-orb ambient-orb-1"></div>
+        <div class="ambient-orb ambient-orb-2"></div>
+      </div>
+
+      <!-- Structure du Cockpit (Sidebar + Espace Principal) -->
+      <div class="cockpit-app-layout" id="cockpit-layout">
+        <!-- Sidebar Navigation -->
+        <div id="sidebar-slot"></div>
+
+        <!-- Espace Principal (Topbar HUD + Viewport) -->
+        <div class="cockpit-main-area" id="main-area">
+          <div id="topbar-slot"></div>
+          <div id="viewport-slot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script principal de démarrage -->
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

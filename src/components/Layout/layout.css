@@ -1,0 +1,656 @@
+/* ========================================================
+   src/components/Layout/layout.css - Design System Cockpit
+   ======================================================== */
+
+/* Conteneur Global Cockpit (Layout racine) */
+.cockpit-app-layout {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+  z-index: 1;
+  background: transparent;
+}
+
+/* ========================================================
+   1. SIDEBAR DOCK FLOTTANT
+   ======================================================== */
+.cockpit-sidebar {
+  position: relative;
+  width: 68px;
+  height: calc(100vh - 24px);
+  margin: 12px 0 12px 14px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 8px;
+  transition: width 0.28s cubic-bezier(0.2, 0.9, 0.3, 1),
+              box-shadow 0.28s ease,
+              border-color 0.25s ease,
+              background 0.25s ease;
+  z-index: 40;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  user-select: none;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* État déployé au survol ou épinglé */
+.cockpit-sidebar:hover,
+.cockpit-sidebar.expanded {
+  width: 236px;
+  padding: 12px 10px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border-color: var(--border-highlight);
+}
+
+/* Header de la Sidebar */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 10px 4px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 8px;
+  position: relative;
+  min-height: 48px;
+  flex-shrink: 0;
+}
+
+.sidebar-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.25), rgba(var(--accent-secondary-rgb), 0.15));
+  border: 1.5px solid var(--border-highlight);
+  box-shadow: 0 0 14px var(--theme-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease;
+}
+
+.sidebar-avatar:hover {
+  transform: scale(1.08);
+}
+
+.sidebar-avatar svg {
+  width: 22px;
+  height: 22px;
+  fill: var(--accent-primary);
+  filter: drop-shadow(0 0 6px var(--accent-primary));
+}
+
+.sidebar-brand-text {
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cockpit-sidebar:hover .sidebar-brand-text,
+.cockpit-sidebar.expanded .sidebar-brand-text {
+  display: flex;
+}
+
+.brand-title {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-main);
+}
+
+.brand-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Navigation latérale */
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  position: relative;
+  padding: 4px 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Indicateur glissant actif */
+.sidebar-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  border-radius: 14px;
+  background: rgba(var(--accent-primary-rgb), 0.16);
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 14px var(--theme-glow);
+  pointer-events: none;
+  z-index: 1;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+              height 0.32s ease,
+              opacity 0.2s ease;
+  will-change: transform, height;
+}
+
+/* Item de navigation */
+.sidebar-item {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 42px;
+  max-height: 72px;
+  border-radius: 14px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 12px;
+  gap: 12px;
+  transition: color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.sidebar-item:hover {
+  color: var(--text-main);
+}
+
+.sidebar-item.active {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.sidebar-icon-wrap {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-icon-wrap svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.sidebar-item.active .sidebar-icon-wrap svg {
+  filter: drop-shadow(0 0 8px var(--accent-primary));
+}
+
+.sidebar-label {
+  display: none;
+  font-size: 0.86rem;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  text-align: left;
+}
+
+.cockpit-sidebar:hover .sidebar-label,
+.cockpit-sidebar.expanded .sidebar-label {
+  display: block;
+}
+
+.sidebar-kbd {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-dim);
+}
+
+.cockpit-sidebar:hover .sidebar-kbd,
+.cockpit-sidebar.expanded .sidebar-kbd {
+  display: block;
+}
+
+/* Tooltip quand la sidebar est slim */
+.sidebar-tooltip {
+  position: absolute;
+  left: 72px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-6px);
+  background: var(--surface-strong);
+  color: var(--text-main);
+  border: 1px solid var(--border-highlight);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  z-index: 60;
+}
+
+.cockpit-sidebar:not(:hover):not(.expanded) .sidebar-item:hover .sidebar-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Footer de la sidebar (Raccourci Paramètres & Version) */
+.sidebar-footer {
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ========================================================
+   2. ESPACE PRINCIPAL & TOPBAR HUD
+   ======================================================== */
+.cockpit-main-area {
+  flex: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+}
+
+/* Topbar HUD */
+.cockpit-topbar {
+  height: 60px;
+  padding: 0 24px 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(10, 11, 18, 0.4);
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  -webkit-app-region: drag;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  -webkit-app-region: no-drag;
+}
+
+.topbar-view-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: rgba(var(--accent-primary-rgb), 0.12);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+}
+
+.topbar-view-icon svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
+
+.topbar-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.topbar-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+}
+
+/* Topbar Right : Télémétrie, Thèmes, Fenêtre */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  -webkit-app-region: no-drag;
+}
+
+/* Horloge HUD discrète */
+.topbar-clock {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  letter-spacing: 0.04em;
+}
+
+/* Sélecteur de Thème dans la Topbar */
+.theme-selector-wrap {
+  position: relative;
+}
+
+.theme-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(var(--accent-primary-rgb), 0.12);
+  border: 1px solid var(--border-highlight);
+  border-radius: 20px;
+  padding: 5px 12px;
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.theme-pill-btn:hover {
+  background: rgba(var(--accent-primary-rgb), 0.22);
+  box-shadow: 0 0 14px var(--theme-glow);
+}
+
+.theme-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+}
+
+/* Menu déroulant des thèmes */
+.theme-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border-highlight);
+  border-radius: 14px;
+  padding: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(28px);
+  z-index: 100;
+  animation: dropIn 0.2s ease-out;
+}
+
+.theme-dropdown.open {
+  display: flex;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.theme-opt-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all 0.15s ease;
+}
+
+.theme-opt-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+}
+
+.theme-opt-item.active {
+  background: rgba(var(--accent-primary-rgb), 0.15);
+  border-color: rgba(var(--accent-primary-rgb), 0.35);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.theme-opt-color-preview {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* Contrôles de Fenêtre Topbar */
+.topbar-window-ctrls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  border-left: 1px solid var(--border-subtle);
+  padding-left: 10px;
+}
+
+.topbar-ctrl-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-size: 0.8rem;
+}
+
+.topbar-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-main);
+}
+
+.topbar-ctrl-btn.close:hover {
+  background: #f43f5e;
+  border-color: #f43f5e;
+  color: #fff;
+}
+
+/* ========================================================
+   3. VIEWPORT PRINCIPAL & VUES DU DASHBOARD
+   ======================================================== */
+.cockpit-viewport {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px;
+  scroll-behavior: smooth;
+}
+
+.cockpit-viewport::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cockpit-viewport::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 3px;
+}
+
+/* Vues du deck (Slide Views) */
+.deck-view {
+  display: none;
+  width: 100%;
+  animation: viewFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.deck-view.active {
+  display: block;
+}
+
+@keyframes viewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Cartes Bento Placeholder pour chaque vue */
+.view-bento-hero {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 30px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--glass-shadow);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.view-bento-hero:hover {
+  border-color: var(--border-highlight);
+}
+
+.view-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(var(--accent-primary-rgb), 0.12);
+  border: 1px solid var(--border-highlight);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent-primary);
+  margin-bottom: 12px;
+}
+
+.view-headline {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.view-description {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+/* Grille Bento de widgets pour chaque vue */
+.view-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.bento-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  padding: 22px;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.bento-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-highlight);
+}
+
+.bento-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bento-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bento-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--accent-secondary);
+}
+
+.bento-preview-skeleton {
+  width: 100%;
+  height: 90px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
