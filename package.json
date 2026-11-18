@@ -2,7 +2,7 @@
   "name": "violet-cockpit",
   "version": "5.2.0",
   "description": "Violet Cockpit - Bureau Electron Moderne & Startpage",
-  "author": "Violet Cockpit Team",
+  "author": "ugovds <ugo.vds@gmail.com>",
   "private": true,
   "type": "module",
   "main": "electron/main.js",
