@@ -523,7 +523,13 @@ function exportFullConfig() {
   try { appearanceData = JSON.parse(localStorage.getItem('startpage_appearance') || 'null'); } catch {}
 
   let portfolioData = null;
-  try { portfolioData = JSON.parse(localStorage.getItem('violet_portfolio_tracker_v4') || 'null'); } catch {}
+  try {
+    portfolioData = JSON.parse(
+      localStorage.getItem('violet_portfolio_tracker_v5') ||
+      localStorage.getItem('violet_portfolio_tracker_v4') ||
+      'null'
+    );
+  } catch {}
 
   const config = {
     app: 'violet-startpage',
@@ -625,6 +631,7 @@ function importFullConfig(file) {
       }
 
       if (data.portfolio && typeof data.portfolio === 'object') {
+        localStorage.setItem('violet_portfolio_tracker_v5', JSON.stringify(data.portfolio));
         localStorage.setItem('violet_portfolio_tracker_v4', JSON.stringify(data.portfolio));
         if (typeof window.loadPortfolioState === 'function') {
           window.portfolioState = window.loadPortfolioState();

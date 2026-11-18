@@ -668,7 +668,7 @@ const EMPTY_PORTFOLIO_STATE = {
   selectedTimeframe: '24h'
 };
 
-// Portefeuille d'exemple de démonstration (chargé uniquement si demandé)
+// Portefeuille officiel reconstitué d'après vos transactions réelles
 const DEMO_PORTFOLIO_STATE = {
   holdings: [
     {
@@ -677,11 +677,11 @@ const DEMO_PORTFOLIO_STATE = {
       shortName: 'Amundi S&P 500',
       symbol: 'EURONEXT:10AP',
       type: 'etf',
-      shares: 4.19,
-      buyPrice: 122.50, // Prix d'achat unitaire (PRU) en €
-      buyDate: '2024-01-19', // Date d'achat
+      shares: 4.1942,
+      buyPrice: 133.56,
+      buyDate: '2026-10-19',
       dcaMonthly: 30,
-      notes: 'PEA Boursorama'
+      notes: 'PEA (4 achats d\'août à oct 2026)'
     },
     {
       id: 'lyp6',
@@ -689,11 +689,11 @@ const DEMO_PORTFOLIO_STATE = {
       shortName: 'Amundi Stoxx 600',
       symbol: 'XETR:LYP6',
       type: 'etf',
-      shares: 1.35,
-      buyPrice: 305.00,
-      buyDate: '2024-02-19',
+      shares: 1.3584,
+      buyPrice: 323.90,
+      buyDate: '2026-10-19',
       dcaMonthly: 20,
-      notes: 'PEA Boursorama'
+      notes: 'PEA (5 achats d\'août à oct 2026)'
     },
     {
       id: 'xmme',
@@ -701,11 +701,11 @@ const DEMO_PORTFOLIO_STATE = {
       shortName: 'MSCI Emerging Mkts',
       symbol: 'XETR:XMME',
       type: 'etf',
-      shares: 4.03,
-      buyPrice: 70.80,
-      buyDate: '2024-03-19',
+      shares: 4.0341,
+      buyPrice: 79.32,
+      buyDate: '2026-10-19',
       dcaMonthly: 10,
-      notes: 'PEA Boursorama'
+      notes: 'PEA (4 achats d\'août à oct 2026)'
     },
     {
       id: 'nvda',
@@ -714,16 +714,16 @@ const DEMO_PORTFOLIO_STATE = {
       symbol: 'NASDAQ:NVDA',
       type: 'stock',
       shares: 1.00,
-      buyPrice: 135.00,
-      buyDate: '2024-04-15',
+      buyPrice: 194.90,
+      buyDate: '2026-10-20',
       dcaMonthly: 0,
-      notes: 'CTO'
+      notes: 'Compte USD - Acheté à 214,75 $'
     }
   ],
   positions: {
-    '10ap': 4.19,
-    'lyp6': 1.35,
-    'xmme': 4.03,
+    '10ap': 4.1942,
+    'lyp6': 1.3584,
+    'xmme': 4.0341,
     'nvda': 1.00
   },
   dcaRules: {
@@ -735,16 +735,64 @@ const DEMO_PORTFOLIO_STATE = {
       'nvda': 0
     }
   },
-  totalInvested: 1345.35,
-  lastDcaExecutionMonth: null,
+  totalInvested: 1515.08,
+  lastDcaExecutionMonth: '2026-10',
   history: [
     {
-      id: 'init_pos',
-      date: '2024-01-19',
-      type: 'initial',
-      title: 'Constitution initiale du portefeuille',
-      amount: 1345.35,
-      note: '4.19 parts 10AP + 1.35 parts LYP6 + 4.03 parts XMME + 1 action NVDA'
+      id: 'tx_20261020_nvda',
+      date: '2026-10-20',
+      type: 'manual',
+      title: 'Achat 1.00 action NVIDIA (NVDA)',
+      amount: 194.90,
+      note: '1 action @ 214,75 $ (194,90 €) sur compte USD'
+    },
+    {
+      id: 'tx_20261019_dca',
+      date: '2026-10-19',
+      type: 'auto',
+      title: 'Versement DCA Mensuel (60 €)',
+      amount: 60.00,
+      note: '+30€ 10AP (0.218 p.), +20€ LYP6 (0.063 p.), +10€ XMME (0.126 p.)'
+    },
+    {
+      id: 'tx_20260918_dca',
+      date: '2026-09-18',
+      type: 'auto',
+      title: 'Versement DCA Mensuel (60 €)',
+      amount: 60.00,
+      note: '+30€ 10AP (0.225 p.), +20€ LYP6 (0.063 p.), +10€ XMME (0.122 p.)'
+    },
+    {
+      id: 'tx_20260824_buy',
+      date: '2026-08-24',
+      type: 'manual',
+      title: 'Renforcement 10AP & LYP6 (300 €)',
+      amount: 300.00,
+      note: '+200€ 10AP (1.520 p. @ 131,58€) + 100€ LYP6 (0.310 p. @ 322,15€)'
+    },
+    {
+      id: 'tx_20260813_arb',
+      date: '2026-08-13',
+      type: 'manual',
+      title: 'Arbitrage Vente 6TVM -> Achat 10AP (300,18 €)',
+      amount: 300.18,
+      note: 'Vente 4.327 p. 6TVM (+300,18€) et achat 2.232 p. 10AP (134,50€)'
+    },
+    {
+      id: 'tx_20260811_init2',
+      date: '2026-08-11',
+      type: 'manual',
+      title: 'Apport & Achats PEA (600 €)',
+      amount: 600.00,
+      note: '+200€ LYP6 (0.614 p.), +200€ XMME (2.524 p.), +200€ 6TVM (2.883 p.)'
+    },
+    {
+      id: 'tx_20260810_init1',
+      date: '2026-08-10',
+      type: 'manual',
+      title: 'Constitution Initiale PEA (300 €)',
+      amount: 300.00,
+      note: '+100€ LYP6 (0.307 p.), +100€ 6TVM (1.444 p.), +100€ XMME (1.262 p.)'
     }
   ],
   selectedTimeframe: '24h'
@@ -757,14 +805,25 @@ let currentPortfolioChartPoints = [];
 
 function loadPortfolioState() {
   try {
-    // Purge préventive des anciennes versions (v1, v2, v3, v4) pour garantir un démarrage propre à zéro
-    ['violet_portfolio_tracker_v1', 'violet_portfolio_tracker_v2', 'violet_portfolio_tracker_v3', 'violet_portfolio_tracker_v4'].forEach((k) => {
-      try { localStorage.removeItem(k); } catch (_) {}
-    });
-
-    const raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
+    let raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
     if (!raw) {
-      // Démarrage propre avec un portefeuille vierge
+      // Récupération et migration automatique depuis les versions précédentes si disponibles
+      for (const oldKey of ['violet_portfolio_tracker_v4', 'violet_portfolio_tracker_v3', 'violet_portfolio_tracker_v2', 'violet_portfolio_tracker_v1']) {
+        const candidate = localStorage.getItem(oldKey);
+        if (candidate) {
+          try {
+            const parsedCandidate = JSON.parse(candidate);
+            if (parsedCandidate && Array.isArray(parsedCandidate.holdings) && parsedCandidate.holdings.length > 0) {
+              raw = candidate;
+              localStorage.setItem(PORTFOLIO_STORAGE_KEY, raw);
+              break;
+            }
+          } catch (_) {}
+        }
+      }
+    }
+    if (!raw) {
+      // Démarrage propre avec un portefeuille vierge uniquement si aucune donnée antérieure n'existe
       return JSON.parse(JSON.stringify(EMPTY_PORTFOLIO_STATE));
     }
     const parsed = JSON.parse(raw);
@@ -837,7 +896,7 @@ function resetPortfolioState(mode = 'empty') {
     if (typeof renderDashboardMarkets === 'function') renderDashboardMarkets();
     if (typeof renderDashboardPortfolio === 'function') renderDashboardPortfolio();
     if (typeof showToast === 'function') {
-      showToast('Portefeuille de démonstration restauré !', 'info');
+      showToast('Portefeuille reconstitué avec succès (1 515,08 €) !', 'success');
     }
   } else {
     // Réinitialisation vierge (vide)
@@ -1585,8 +1644,8 @@ function renderPortfolioHoldings(holdings, totalValue) {
             <span>+ Ajouter mon premier actif</span>
           </button>
           <button type="button" class="portfolio-btn-secondary" id="portfolio-empty-demo-btn">
-            <i class="fa-solid fa-rotate-left"></i>
-            <span>Charger l'exemple de démonstration</span>
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Restaurer mon portefeuille (1 515,08 €)</span>
           </button>
         </div>
       </div>
@@ -2524,7 +2583,7 @@ function setupPortfolioModalHandlers() {
 
   if (restoreDemoBtn) {
     restoreDemoBtn.addEventListener('click', () => {
-      if (confirm("Restaurer les positions d'exemple par défaut ?")) {
+      if (confirm("Restaurer votre portefeuille officiel reconstitué (1 515,08 €) ?")) {
         resetPortfolioState('demo');
         renderPortfolioPositionsTab();
       }
