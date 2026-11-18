@@ -166,6 +166,7 @@
     const ramEl = sysBadge.querySelector('.sys-ram-label');
 
     async function updateTelemetry() {
+      if (document.hidden) return;
       const data = await DesktopCockpit.getSystemMetrics();
       if (!data) return;
       if (cpuEl) cpuEl.textContent = `CPU: ${data.cpu_usage.toFixed(1)}%`;
