@@ -19,19 +19,40 @@
 
 ---
 
-## 📥 Téléchargement en 1 Clic (Version Publique)
+## 🚀 Téléchargement Direct (Version Publique Prête à l'Emploi)
 
-Pour les utilisateurs qui souhaitent simplement installer et utiliser l'application immédiatement sans ligne de commande ni configuration :
+> Cliquez directement sur le bouton correspondant à votre système pour lancer le téléchargement immédiat :
 
-👉 **[Accéder aux Téléchargements (Page des Releases)](https://github.com/ugovds/Dashboard/releases)**
+<div align="center">
 
-| Votre Système | Fichier à Télécharger | Comment l'Installer ? |
+<a href="https://github.com/ugovds/Dashboard/releases/download/v5.2.0/Violet-Cockpit-Setup-5.2.0.exe">
+  <img src="https://img.shields.io/badge/Windows-Télécharger%20.exe%20(Assistant)-0078D6?style=for-the-badge&logo=windows&logoColor=white" height="42" alt="Télécharger Windows .exe" />
+</a>
+&nbsp;&nbsp;
+<a href="https://github.com/ugovds/Dashboard/releases/download/v5.2.0/Violet-Cockpit-5.2.0.AppImage">
+  <img src="https://img.shields.io/badge/Linux-Télécharger%20.AppImage-FCC624?style=for-the-badge&logo=linux&logoColor=black" height="42" alt="Télécharger Linux .AppImage" />
+</a>
+&nbsp;&nbsp;
+<a href="https://github.com/ugovds/Dashboard/releases/download/v5.2.0/violet-cockpit_5.2.0_amd64.deb">
+  <img src="https://img.shields.io/badge/Ubuntu%20%2F%20Debian-Télécharger%20.deb-E95420?style=for-the-badge&logo=ubuntu&logoColor=white" height="42" alt="Télécharger Debian / Ubuntu .deb" />
+</a>
+&nbsp;&nbsp;
+<a href="https://github.com/ugovds/Dashboard/releases/download/v5.2.0/Violet-Cockpit-5.2.0.dmg">
+  <img src="https://img.shields.io/badge/macOS-Télécharger%20.dmg-000000?style=for-the-badge&logo=apple&logoColor=white" height="42" alt="Télécharger macOS .dmg" />
+</a>
+
+</div>
+
+<br>
+
+| Système | Installateur | Procédure d'installation simplifiée |
 |---|---|---|
-| **🪟 Windows (10 / 11)** | `Violet-Cockpit-Setup-5.2.0.exe` | **Double-cliquez** sur le fichier téléchargé. Un assistant d'installation s'ouvre : cliquez sur "Suivant", choisissez si besoin votre dossier, et l'application s'installe toute seule en créant une icône sur votre Bureau et dans le menu Démarrer ! |
-| **🪟 Windows (Portable)** | `Violet-Cockpit-Portable-5.2.0.exe` | **Sans installation** : double-cliquez et l'application démarre directement. Idéal pour clé USB. |
-| **🐧 Linux (Universel)** | `Violet-Cockpit-5.2.0.AppImage` | Téléchargez, faites Clic droit > Propriétés > *Autoriser l'exécution comme un programme*, puis **double-cliquez pour lancer**. |
-| **🐧 Linux (Debian / Ubuntu)** | `violet-cockpit_5.2.0_amd64.deb` | Double-cliquez pour ouvrir dans le Centre Logiciels Ubuntu et cliquez sur **Installer**. |
-| **🍏 macOS (Apple Silicon & Intel)** | `Violet-Cockpit-5.2.0.dmg` | Double-cliquez sur le fichier `.dmg` et glissez simplement l'icône dans le dossier **Applications**. |
+| **🪟 Windows (10 / 11)** | [`Violet-Cockpit-Setup-5.2.0.exe`](https://github.com/ugovds/Dashboard/releases/download/v5.2.0/Violet-Cockpit-Setup-5.2.0.exe) | **Double-cliquez** sur le `.exe`. L'assistant d'installation officiel s'ouvre, installe l'application, crée le raccourci sur le Bureau et dans le menu Démarrer. |
+| **🐧 Linux (Toutes distributions)** | [`Violet-Cockpit-5.2.0.AppImage`](https://github.com/ugovds/Dashboard/releases/download/v5.2.0/Violet-Cockpit-5.2.0.AppImage) | **Double-cliquez pour lancer**. *(Si besoin : Clic droit > Propriétés > Autoriser l'exécution)*. |
+| **🐧 Linux (Debian / Ubuntu / Mint)** | [`violet-cockpit_5.2.0_amd64.deb`](https://github.com/ugovds/Dashboard/releases/download/v5.2.0/violet-cockpit_5.2.0_amd64.deb) | **Double-cliquez** pour ouvrir la logithèque Ubuntu et cliquez sur **Installer**. |
+| **🍏 macOS (Apple Silicon & Intel)** | [`Violet-Cockpit-5.2.0.dmg`](https://github.com/ugovds/Dashboard/releases/download/v5.2.0/Violet-Cockpit-5.2.0.dmg) | Ouvrez le `.dmg` et glissez simplement l'icône dans le dossier **Applications**. |
+
+👉 *Retrouvez également toutes les versions et notes de version sur la [page officielle des Releases](https://github.com/ugovds/Dashboard/releases).*
 
 ---
 
