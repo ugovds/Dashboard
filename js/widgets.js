@@ -162,6 +162,10 @@ function playPomoChime() {
       osc.start(startTime);
       osc.stop(startTime + duration + 0.1);
     });
+
+    if (window.DesktopCockpit && typeof window.DesktopCockpit.sendNotification === 'function') {
+      window.DesktopCockpit.sendNotification('⏱️ Session Pomodoro Terminée !', 'Votre session de focus est achevée. Prenez une pause méritée.');
+    }
   } catch (err) {
     console.warn('Web Audio chime non supporté ou bloqué :', err);
   }

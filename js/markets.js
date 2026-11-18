@@ -2743,6 +2743,10 @@ let marketRunnerCheckedTime = 0;
  * Détecte l'URL du serveur local runner.py pour relayer les flux réels Yahoo Finance (parallélisé & non-bloquant)
  */
 async function detectMarketRunner() {
+  if (window.DesktopCockpit && window.DesktopCockpit.isDesktop) {
+    marketRunnerBaseUrl = 'desktop-native';
+    return 'desktop-native';
+  }
   if (marketRunnerBaseUrl !== null) return marketRunnerBaseUrl;
   if (Date.now() - marketRunnerCheckedTime < 25000) return null;
   marketRunnerCheckedTime = Date.now();
@@ -2840,11 +2844,17 @@ async function get24hChartData(asset) {
     }
   }
 
-  // 2. Cours réels 24h via runner.py pour Actions, ETF, Indices & Matières
+  // 2. Cours réels 24h via Rust/Tauri natif ou runner.py pour Actions, ETF, Indices & Matières
   if (asset.type !== 'crypto') {
     try {
       const runner = await detectMarketRunner();
-      if (runner !== null) {
+      if (runner === 'desktop-native' && window.DesktopCockpit) {
+        const chartData = await window.DesktopCockpit.getMarketChart(asset.id, '1d', '5m');
+        if (chartData && Array.isArray(chartData.points) && chartData.points.length >= 3) {
+          chart24hCache[cacheKey] = chartData;
+          return chartData;
+        }
+      } else if (runner !== null) {
         const res = await fetch(`${runner}/api/market/chart?asset=${asset.id}&range=1d&interval=5m`);
         if (res.ok) {
           const payload = await res.json();
@@ -3525,13 +3535,18 @@ async function fetchLiveMarketData() {
   try {
     const runner = await detectMarketRunner();
     if (!runner) {
-      throw new Error("Serveur local non joignable. Lancez `./runner.py` pour alimenter les cours.");
+      throw new Error("Serveur local non joignable. Lancez `./runner.py` ou l'application desktop pour alimenter les cours.");
     }
-    const res = await fetch(`${runner}/api/market/quotes`);
-    if (!res.ok) {
-      throw new Error(`Erreur serveur (${res.status}).`);
+    let payload = null;
+    if (runner === 'desktop-native' && window.DesktopCockpit) {
+      payload = await window.DesktopCockpit.getMarketQuotes(false);
+    } else {
+      const res = await fetch(`${runner}/api/market/quotes`);
+      if (!res.ok) {
+        throw new Error(`Erreur serveur (${res.status}).`);
+      }
+      payload = await res.json();
     }
-    const payload = await res.json();
     if (payload && payload.status === 'ok' && payload.quotes) {
       const quotes = payload.quotes;
       Object.entries(quotes).forEach(([id, q]) => {

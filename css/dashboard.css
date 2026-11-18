@@ -137,6 +137,41 @@
   }
 }
 
+/* Badge Télémétrie Matérielle Linux (Rust Desktop App) */
+.hud-sys-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.38rem 0.85rem;
+  border-radius: 99px;
+  background: rgba(124, 77, 255, 0.08);
+  border: 1px solid rgba(124, 77, 255, 0.25);
+  color: var(--text-main, #e0e0e0);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(12px);
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.hud-sys-badge:hover {
+  background: rgba(124, 77, 255, 0.15);
+  border-color: rgba(124, 77, 255, 0.45);
+  box-shadow: 0 0 14px rgba(124, 77, 255, 0.25);
+}
+
+.hud-sys-badge i {
+  color: var(--accent-primary, #9d72ff);
+  font-size: 0.75rem;
+}
+
+.hud-sys-badge .sys-separator {
+  opacity: 0.35;
+  margin: 0 0.15rem;
+}
+
 /* --- VIEWPORT DES VUES --- */
 .dashboard-viewport {
   flex: 1;

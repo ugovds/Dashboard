@@ -264,6 +264,14 @@ function highlightSuggestion() {
   });
 }
 
+function openExternalLink(url) {
+  if (window.DesktopCockpit && typeof window.DesktopCockpit.openExternal === 'function') {
+    window.DesktopCockpit.openExternal(url);
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
 function executeSuggestion(item) {
   const searchInput = document.getElementById('search-input');
   if (!searchInput) return;
@@ -275,7 +283,7 @@ function executeSuggestion(item) {
     return;
   }
   if (item.type === 'shortcut') {
-    window.open(item.url, '_blank');
+    openExternalLink(item.url);
   } else {
     const raw = searchInput.value.trim();
     const parts = raw.split(' ');
@@ -285,7 +293,7 @@ function executeSuggestion(item) {
       effectivePrefix && searchEngines[effectivePrefix]
         ? searchEngines[effectivePrefix].url + encodeURIComponent(item.text)
         : 'https://www.google.com/search?q=' + encodeURIComponent(item.text);
-    window.open(url, '_blank');
+    openExternalLink(url);
   }
 }
 
@@ -621,9 +629,9 @@ function initSearch() {
       const query = (effectivePrefix === prefixInInput)
         ? parts.slice(1).join(' ')
         : raw;
-      window.open(searchEngines[effectivePrefix].url + encodeURIComponent(query), '_blank');
+      openExternalLink(searchEngines[effectivePrefix].url + encodeURIComponent(query));
     } else {
-      window.open('https://www.google.com/search?q=' + encodeURIComponent(raw), '_blank');
+      openExternalLink('https://www.google.com/search?q=' + encodeURIComponent(raw));
     }
   });
 }
