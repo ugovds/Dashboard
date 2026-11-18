@@ -45,9 +45,19 @@
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
       "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "shortcutName": "Violet Cockpit",
+      "uninstallDisplayName": "Violet Cockpit",
+      "runAfterFinish": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "ugovds",
+      "repo": "Dashboard"
     },
     "mac": {
       "target": [

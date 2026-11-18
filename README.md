@@ -19,6 +19,22 @@
 
 ---
 
+## 📥 Téléchargement en 1 Clic (Version Publique)
+
+Pour les utilisateurs qui souhaitent simplement installer et utiliser l'application immédiatement sans ligne de commande ni configuration :
+
+👉 **[Accéder aux Téléchargements (Page des Releases)](https://github.com/ugovds/Dashboard/releases)**
+
+| Votre Système | Fichier à Télécharger | Comment l'Installer ? |
+|---|---|---|
+| **🪟 Windows (10 / 11)** | `Violet-Cockpit-Setup-5.2.0.exe` | **Double-cliquez** sur le fichier téléchargé. Un assistant d'installation s'ouvre : cliquez sur "Suivant", choisissez si besoin votre dossier, et l'application s'installe toute seule en créant une icône sur votre Bureau et dans le menu Démarrer ! |
+| **🪟 Windows (Portable)** | `Violet-Cockpit-Portable-5.2.0.exe` | **Sans installation** : double-cliquez et l'application démarre directement. Idéal pour clé USB. |
+| **🐧 Linux (Universel)** | `Violet-Cockpit-5.2.0.AppImage` | Téléchargez, faites Clic droit > Propriétés > *Autoriser l'exécution comme un programme*, puis **double-cliquez pour lancer**. |
+| **🐧 Linux (Debian / Ubuntu)** | `violet-cockpit_5.2.0_amd64.deb` | Double-cliquez pour ouvrir dans le Centre Logiciels Ubuntu et cliquez sur **Installer**. |
+| **🍏 macOS (Apple Silicon & Intel)** | `Violet-Cockpit-5.2.0.dmg` | Double-cliquez sur le fichier `.dmg` et glissez simplement l'icône dans le dossier **Applications**. |
+
+---
+
 ## ⚡ En Bref : Pourquoi Violet Cockpit ?
 
 **Violet Cockpit** est une refonte intégrale de votre environnement de démarrage et de productivité sous forme d'**application de bureau Electron native**. Conçu pour un démarrage instantané (< 200 ms) et une empreinte mémoire minimale (< 90 Mo de RAM), il réunit tout votre univers de travail au même endroit :
