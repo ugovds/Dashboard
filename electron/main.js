@@ -89,19 +89,38 @@ function createMainWindow() {
     return { action: 'deny' };
   });
 
-  // Chargement en mode dev (URL Vite dynamique) ou en mode production (fichier dist/index.html)
+  // Raccourcis pratiques : F5 / Ctrl+R pour recharger, F12 / Ctrl+Shift+I pour ouvrir les DevTools
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if ((input.control && input.key.toLowerCase() === 'r') || input.key === 'F5') {
+      mainWindow.reload();
+      event.preventDefault();
+    }
+    if ((input.control && input.shift && input.key.toLowerCase() === 'i') || input.key === 'F12') {
+      mainWindow.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
+
+  // Chargement :
+  // 1. Si serveur Vite actif -> devUrl
+  // 2. Si application packagée (AppImage/deb) -> dist/index.html
+  // 3. Sinon (bureau local) -> charge directement src/index.html
+  // -> Toute modification CSS/JS/HTML dans src/ est donc instantanément prise en compte sans rien recompiler !
   const devUrl = process.env.VITE_DEV_SERVER_URL;
   if (devUrl) {
     mainWindow.loadURL(devUrl).catch((err) => {
       console.error('[Main] Échec du chargement de l\'URL Vite:', err);
     });
-  } else {
+  } else if (app.isPackaged) {
     const distPath = path.join(__dirname, '../dist/index.html');
+    mainWindow.loadFile(distPath);
+  } else {
     const srcPath = path.join(__dirname, '../src/index.html');
-    if (fs.existsSync(distPath)) {
-      mainWindow.loadFile(distPath);
-    } else {
+    const distPath = path.join(__dirname, '../dist/index.html');
+    if (fs.existsSync(srcPath)) {
       mainWindow.loadFile(srcPath);
+    } else {
+      mainWindow.loadFile(distPath);
     }
   }
 }
