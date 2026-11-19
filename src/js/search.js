@@ -580,6 +580,8 @@ function initSearch() {
     } else if (e.key === 'Escape') {
       suggestionsBox.hidden = true;
       selectedSuggestionIndex = -1;
+      searchInput.value = '';
+      searchInput.blur();
     }
   });
 

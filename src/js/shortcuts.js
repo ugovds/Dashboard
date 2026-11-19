@@ -1,13 +1,53 @@
 /**
  * shortcuts.js - Raccourcis clavier globaux & Navigation rapide
- * - Alt+1 à Alt+9 : Bascule directe entre les vues du deck unifié
- * - T : Cible instantanément le champ d'ajout de tâche (vue Agenda)
- * - Ctrl+K ou B : Ouvre la palette de commande et recherche de signets
+ * - Flèches (Droite / Bas / Gauche / Haut) : Bascule entre les onglets du cockpit dès le démarrage
+ * - Saisie au clavier (lettres, chiffres...) : Cible automatiquement la recherche Google quand on commence à taper
+ * - Alt+1 à Alt+9 : Bascule directe vers un onglet spécifique
+ * - Ctrl+K : Ouvre la palette de commande et recherche de signets
  * - Ctrl+Shift+D : Bascule le mode Nuit / Atténuation HUD
- * - 1, 2, 3 : Changement de thème (quand aucun champ n'est actif)
- * - / : Cible la barre de recherche globale
- * - Échap : Ferme les modales ouvertes ou quitte le champ actif
+ * - / : Cible manuellement la barre de recherche globale
+ * - Échap : Vide et quitte le champ de recherche ou ferme les modales
  */
+
+function isAnyModalOpen() {
+  const visibleModals = document.querySelectorAll(
+    '.modal-backdrop:not([hidden]), #edit-modal:not([hidden]), #category-modal:not([hidden]), #command-palette-modal:not([hidden]), #market-chart-modal:not([hidden]):not(.is-hidden), #portfolio-manage-modal:not([hidden]):not(.is-hidden)'
+  );
+  return Array.from(visibleModals).some(
+    (el) => el.style.display !== 'none' && !el.classList.contains('is-hidden')
+  );
+}
+
+function switchDeckTab(direction) {
+  // Liste ordonnée de tous les onglets visibles dans la barre latérale
+  const sidebarBtns = Array.from(
+    document.querySelectorAll('.sidebar-nav .deck-nav-btn, .sidebar-nav-item')
+  ).filter((b, idx, self) => self.indexOf(b) === idx)
+   .filter((b) => !b.classList.contains('tab-hidden') && b.style.display !== 'none' && b.offsetParent !== null);
+
+  if (!sidebarBtns.length) return;
+
+  const activeBtn = document.querySelector('.sidebar-nav .deck-nav-btn.active') ||
+                    document.querySelector('.deck-nav-btn.active');
+  const activeIdx = activeBtn ? sidebarBtns.indexOf(activeBtn) : -1;
+
+  let targetIdx;
+  if (direction > 0) {
+    targetIdx = (activeIdx < 0 || activeIdx >= sidebarBtns.length - 1) ? 0 : activeIdx + 1;
+  } else {
+    targetIdx = (activeIdx <= 0) ? sidebarBtns.length - 1 : activeIdx - 1;
+  }
+
+  const targetBtn = sidebarBtns[targetIdx];
+  if (targetBtn) {
+    targetBtn.click();
+    // Évite qu'un contour de focus reste bloqué sur le bouton cliqué
+    if (document.activeElement && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
+  }
+}
+
 function initShortcuts() {
   const DECK_VIEWS_ORDER = [
     'dashboard',
@@ -36,7 +76,7 @@ function initShortcuts() {
     const isCategoryModalOpen = categoryModal && !categoryModal.hidden;
     const isPaletteOpen = commandPaletteModal && !commandPaletteModal.hidden;
 
-    // Fermeture des modales avec Échap
+    // 1. Fermeture des modales avec Échap
     if (e.key === 'Escape') {
       if (isPaletteOpen && typeof closeCommandPalette === 'function') {
         closeCommandPalette();
@@ -50,9 +90,20 @@ function initShortcuts() {
         closeCategoryModal();
         return;
       }
+      if (active === searchInput) {
+        searchInput.value = '';
+        searchInput.blur();
+        const suggestionsBox = document.getElementById('suggestions-box');
+        if (suggestionsBox) suggestionsBox.hidden = true;
+        return;
+      }
+      if (active && active !== document.body) {
+        active.blur();
+        return;
+      }
     }
 
-    // Toggle Palette de Commande via Ctrl+K / Cmd+K
+    // 2. Toggle Palette de Commande via Ctrl+K / Cmd+K
     if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'k')) {
       e.preventDefault();
       if (isPaletteOpen) {
@@ -63,14 +114,14 @@ function initShortcuts() {
       return;
     }
 
-    // Toggle Dim Mode (Mode Nuit / Atténuation HUD) via Ctrl+Shift+D
+    // 3. Toggle Dim Mode (Mode Nuit / Atténuation HUD) via Ctrl+Shift+D
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
       e.preventDefault();
       if (typeof toggleDimMode === 'function') toggleDimMode();
       return;
     }
 
-    // Navigation dans le deck via Alt+1 à Alt+9 et Alt+0
+    // 4. Navigation directe dans le deck via Alt+1 à Alt+9 et Alt+0
     if (e.altKey && !e.ctrlKey && !e.metaKey) {
       let num = null;
       if (e.code.startsWith('Digit')) {
@@ -99,50 +150,52 @@ function initShortcuts() {
       }
     }
 
-    const isAnyModalOpen =
-      isEditModalOpen ||
-      isWeatherModalOpen ||
-      isFeedsModalOpen ||
-      isHubModalOpen ||
-      isCategoryModalOpen ||
-      isPaletteOpen;
-    if (isAnyModalOpen) return;
+    // Si une modale est ouverte, on laisse la modale gérer ses événements clavier
+    if (isAnyModalOpen()) return;
 
-    const isTodoFocused = active === todoInput || active === todoDate;
-    const isSearchEmpty = active === searchInput && searchInput.value.trim() === '';
-    const isNotTyping = active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA' && active.tagName !== 'SELECT';
+    // Détection si l'utilisateur est en train d'écrire dans un champ de texte
+    const isInputOrEditor = active && (
+      active.tagName === 'INPUT' ||
+      active.tagName === 'TEXTAREA' ||
+      active.tagName === 'SELECT' ||
+      active.isContentEditable
+    );
 
-    // Navigation au clavier par touches Flèches Haut & Bas exclusivement entre les onglets de la sidebar
-    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && isNotTyping) {
-      e.preventDefault();
-      const sidebarKeys = ['dashboard', 'bookmarks', 'agenda', 'weather', 'feeds', 'system', 'pomodoro', 'notes', 'quotes'];
-      const sidebarBtns = sidebarKeys
-        .map((k) => document.querySelector(`.sidebar-nav .deck-nav-btn[data-deck-view="${k}"]`))
-        .filter((b) => b && !b.classList.contains('tab-hidden') && b.style.display !== 'none');
+    // 5. Gestion spécifique du champ de recherche Google
+    if (active === searchInput) {
+      const isSearchEmpty = searchInput.value.trim() === '';
+      const isArrowKey = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(e.key);
 
-      if (sidebarBtns.length) {
-        const activeBtn = document.querySelector('.sidebar-nav .deck-nav-btn.active');
-        const activeIdx = activeBtn ? sidebarBtns.indexOf(activeBtn) : -1;
-        let targetIdx;
-        if (e.key === 'ArrowDown') {
-          targetIdx = (activeIdx < 0 || activeIdx >= sidebarBtns.length - 1) ? 0 : activeIdx + 1;
-        } else {
-          targetIdx = (activeIdx <= 0) ? sidebarBtns.length - 1 : activeIdx - 1;
-        }
-        sidebarBtns[targetIdx].click();
+      // Si le champ est vide et qu'on appuie sur une flèche -> change d'onglet immédiatement
+      if (isSearchEmpty && isArrowKey) {
+        e.preventDefault();
+        searchInput.blur();
+        switchDeckTab(e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1);
+        return;
       }
+
+      // Si le champ contient du texte, on laisse la navigation standard des suggestions / curseur
       return;
     }
 
-    // Raccourci B : Ouvrir la palette de commande si on ne tape nulle part
-    if ((e.key === 'b' || e.key === 'B') && isNotTyping) {
+    // Si l'utilisateur tape dans un autre champ (ex: tâche, note, url de favori), on ne le perturbe pas
+    if (isInputOrEditor) return;
+
+    // 6. Navigation par FLÈCHES pour changer d'onglet (fonctionne dès le démarrage !)
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
-      if (typeof openCommandPalette === 'function') openCommandPalette();
+      switchDeckTab(1); // Onglet suivant
       return;
     }
 
-    // Annuler la suppression (Ctrl+Z / Cmd+Z) quand on ne tape pas dans un champ
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && isNotTyping) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      switchDeckTab(-1); // Onglet précédent
+      return;
+    }
+
+    // 7. Annuler la suppression (Ctrl+Z / Cmd+Z)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       if (typeof undoDeleteTask === 'function' && undoDeleteTask()) {
         e.preventDefault();
         return;
@@ -153,27 +206,20 @@ function initShortcuts() {
       }
     }
 
-    // Raccourci T : Ajout rapide de tâche (active la vue Agenda et focus le champ)
-    if ((e.key === 't' || e.key === 'T') && isNotTyping) {
+    // 8. Raccourci '/' : Cible la barre de recherche manuellement
+    if (e.key === '/' && searchInput) {
       e.preventDefault();
-      const agendaBtn = document.querySelector('.deck-nav-btn[data-deck-view="agenda"]');
-      if (agendaBtn) agendaBtn.click();
-      if (todoInput) {
-        setTimeout(() => todoInput.focus(), 80);
+      const dashBtn = document.querySelector('.deck-nav-btn[data-deck-view="dashboard"]');
+      if (dashBtn && !dashBtn.classList.contains('active')) {
+        dashBtn.click();
       }
+      searchInput.focus();
       return;
     }
 
-    const isThemeKey =
-      e.code === 'Numpad1' ||
-      e.code === 'Numpad2' ||
-      e.code === 'Numpad3' ||
-      e.code === 'Numpad4' ||
-      e.code === 'Numpad5' ||
-      ((isNotTyping || isSearchEmpty) && ['1', '2', '3', '4', '5'].includes(e.key));
-
-    if (isThemeKey && !isTodoFocused && (isNotTyping || isSearchEmpty)) {
-      const num = e.code.startsWith('Numpad') ? e.code.replace('Numpad', '') : e.key;
+    // Touches du pavé numérique pour les thèmes (Numpad1 à Numpad5)
+    if (['Numpad1', 'Numpad2', 'Numpad3', 'Numpad4', 'Numpad5'].includes(e.code)) {
+      const num = e.code.replace('Numpad', '');
       if (typeof themesConfig !== 'undefined' && themesConfig[num] && typeof applyTheme === 'function') {
         e.preventDefault();
         applyTheme(num);
@@ -181,11 +227,25 @@ function initShortcuts() {
       }
     }
 
-    if (e.key === '/' && isNotTyping && searchInput) {
-      e.preventDefault();
-      searchInput.focus();
-    } else if (e.key === 'Escape' && !isNotTyping) {
-      active.blur();
+    // 9. FOCUS SUR LA RECHERCHE GOOGLE SEULEMENT QUAND ON COMMENCE À TAPER
+    // Dès qu'on appuie sur une touche imprimable (lettre, chiffre, symbole) hors combinaisons Ctrl/Alt/Meta :
+    const isControlKey = [
+      'Escape', 'Tab', 'Enter', 'Shift', 'Control', 'Alt', 'Meta',
+      'CapsLock', 'Home', 'End', 'PageUp', 'PageDown', 'Insert', 'Delete', 'Backspace',
+      'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'
+    ].includes(e.key);
+
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !isControlKey) {
+      // Si on n'est pas sur la vue d'accueil (dashboard où se trouve la recherche Google), on y bascule
+      const dashBtn = document.querySelector('.deck-nav-btn[data-deck-view="dashboard"]');
+      if (dashBtn && !dashBtn.classList.contains('active')) {
+        dashBtn.click();
+      }
+
+      if (searchInput) {
+        searchInput.focus();
+        // Le caractère sera directement saisi dans le champ par le navigateur
+      }
     }
   });
 }

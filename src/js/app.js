@@ -176,6 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const initialViewKey = activeBtn?.dataset?.deckView || 'dashboard';
   requestAnimationFrame(() => {
     PageSkeletonManager.revealView(initialViewKey);
+    // Assure qu'aucun champ n'a le focus au démarrage pour que les flèches changent d'onglet immédiatement
+    if (document.activeElement && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
   });
 
   // === PHASE 2 : DIFFÉRÉE (Tâches réseau d'arrière-plan sans impact sur le layout) ===
