@@ -2743,7 +2743,7 @@ let marketRunnerCheckedTime = 0;
  * Détecte l'URL du serveur local runner.py pour relayer les flux réels Yahoo Finance (parallélisé & non-bloquant)
  */
 async function detectMarketRunner() {
-  if (window.DesktopCockpit && window.DesktopCockpit.isDesktop) {
+  if ((window.DesktopCockpit && window.DesktopCockpit.isDesktop) || window.desktopAPI) {
     marketRunnerBaseUrl = 'desktop-native';
     return 'desktop-native';
   }
@@ -2844,7 +2844,7 @@ async function get24hChartData(asset) {
     }
   }
 
-  // 2. Cours réels 24h via Rust/Tauri natif ou runner.py pour Actions, ETF, Indices & Matières
+  // 2. Cours réels 24h via Electron native ou runner.py pour Actions, ETF, Indices & Matières
   if (asset.type !== 'crypto') {
     try {
       const runner = await detectMarketRunner();

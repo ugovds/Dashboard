@@ -137,7 +137,7 @@
   }
 }
 
-/* Badge Télémétrie Matérielle Linux (Rust Desktop App) */
+/* Badge Télémétrie Système (Electron Native) */
 .hud-sys-badge {
   display: inline-flex;
   align-items: center;

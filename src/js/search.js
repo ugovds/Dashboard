@@ -267,8 +267,10 @@ function highlightSuggestion() {
 function openExternalLink(url) {
   if (window.DesktopCockpit && typeof window.DesktopCockpit.openExternal === 'function') {
     window.DesktopCockpit.openExternal(url);
+  } else if (window.desktopAPI && typeof window.desktopAPI.openExternal === 'function') {
+    window.desktopAPI.openExternal(url);
   } else {
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 }
 

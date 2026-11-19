@@ -1,26 +1,18 @@
 #!/usr/bin/env bash
 # ========================================================
-# Lanceur Violet Cockpit Desktop (Tauri v2 + Rust)
+# Lanceur Violet Cockpit Desktop (Electron)
 # ========================================================
 
 set -e
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_DIR"
 
-export PATH="$HOME/.cargo/bin:$PATH"
+# Vérifie si un paquet compilé existe dans release/
+RELEASE_APPIMAGE="$(find "$PROJECT_DIR/release" -name "*.AppImage" 2>/dev/null | head -n 1)"
 
-# Optimisations GPU / WebKitGTK Linux Wayland
-export WEBKIT_DISABLE_DMABUF_RENDERER=1
-export __NV_DISABLE_EXPLICIT_SYNC=1
-
-BINARY_RELEASE="$PROJECT_DIR/src-tauri/target/release/violet-cockpit"
-BINARY_DEBUG="$PROJECT_DIR/src-tauri/target/debug/violet-cockpit"
-
-if [[ -f "$BINARY_RELEASE" ]]; then
-    exec "$BINARY_RELEASE" "$@"
-elif [[ -f "$BINARY_DEBUG" ]]; then
-    exec "$BINARY_DEBUG" "$@"
+if [[ -n "$RELEASE_APPIMAGE" && -x "$RELEASE_APPIMAGE" ]]; then
+    exec "$RELEASE_APPIMAGE" "$@"
 else
-    echo "⚙️ Binaire non trouvé. Lancement via npm run tauri dev..."
-    exec npm run tauri dev
+    # Lancement direct via Electron
+    exec npx electron . --no-sandbox "$@"
 fi

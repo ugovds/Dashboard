@@ -96,7 +96,13 @@ function createMainWindow() {
       console.error('[Main] Échec du chargement de l\'URL Vite:', err);
     });
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    const distPath = path.join(__dirname, '../dist/index.html');
+    const srcPath = path.join(__dirname, '../src/index.html');
+    if (fs.existsSync(distPath)) {
+      mainWindow.loadFile(distPath);
+    } else {
+      mainWindow.loadFile(srcPath);
+    }
   }
 }
 
