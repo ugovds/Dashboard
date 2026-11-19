@@ -129,7 +129,7 @@ function getWeatherFavorites() {
     const saved = localStorage.getItem('startpage_weather_favorites');
     if (saved) return JSON.parse(saved);
   } catch {}
-  return ['Paris', 'Tokyo', 'New York'];
+  return ['Bruxelles', 'Liège', 'Namur', 'Paris'];
 }
 
 function saveWeatherFavorites(favs) {
@@ -217,7 +217,7 @@ async function fetchOpenMeteo(city) {
       }
     } catch {}
     if (!locInfo) {
-      locInfo = { name: 'Paris', country: 'France', latitude: 48.8566, longitude: 2.3522 };
+      locInfo = { name: 'Bruxelles', country: 'Belgique', latitude: 50.85045, longitude: 4.34878 };
     }
   }
 
@@ -357,10 +357,26 @@ async function fetchWeather() {
 
   try {
     let data = null;
-    try {
-      data = await fetchOpenMeteo(city);
-    } catch (e) {
-      console.warn('Open-Meteo failed, trying wttr.in fallback:', e);
+
+    // 1. Tenter la passerelle native Electron (Ultra-rapide, cache disque / mémoire)
+    if (window.DesktopCockpit && typeof window.DesktopCockpit.getWeather === 'function') {
+      try {
+        const dRes = await window.DesktopCockpit.getWeather(city, false);
+        if (dRes && dRes.status === 'ok' && dRes.data) {
+          data = dRes.data;
+        }
+      } catch (e) {
+        console.warn('[Weather] Passerelle desktop en échec, bascule web:', e);
+      }
+    }
+
+    // 2. Fallback direct web si non-desktop ou non reçu
+    if (!data) {
+      try {
+        data = await fetchOpenMeteo(city);
+      } catch (e) {
+        console.warn('Open-Meteo failed, trying wttr.in fallback:', e);
+      }
     }
 
     if (!data) {

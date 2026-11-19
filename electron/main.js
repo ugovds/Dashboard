@@ -1,10 +1,11 @@
-import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, shell, Notification, dialog } from 'electron';
+import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, shell, Notification, dialog, globalShortcut, session } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import JSONStore from './store.js';
 import FinanceService from './services/finance.js';
+import WeatherService from './services/weather.js';
 import RSSService from './services/rss.js';
 
 // Configuration Chromium GPU & Performance
@@ -22,15 +23,38 @@ let tray = null;
 let isQuitting = false;
 let store = null;
 
+function toggleMainWindow() {
+  if (!mainWindow) return;
+  if (mainWindow.isVisible() && mainWindow.isFocused()) {
+    mainWindow.hide();
+  } else {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    if (!mainWindow.isVisible()) mainWindow.show();
+    mainWindow.maximize();
+    mainWindow.focus();
+  }
+}
+
 // Empêcher les doublons d'instances (Single Instance Lock)
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
+  app.on('second-instance', (_event, commandLine) => {
     if (mainWindow) {
+      const isHide = commandLine && commandLine.some((arg) => arg.includes('--hide'));
+      if (isHide) {
+        mainWindow.hide();
+        return;
+      }
+      const isToggle = commandLine && commandLine.some((arg) => arg.includes('--toggle'));
+      if (isToggle && mainWindow.isVisible() && mainWindow.isFocused()) {
+        mainWindow.hide();
+        return;
+      }
       if (mainWindow.isMinimized()) mainWindow.restore();
       if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.maximize();
       mainWindow.focus();
     }
   });
@@ -77,6 +101,7 @@ function createMainWindow() {
 
   // Affichage fluide dès que la fenêtre est prête pour éviter tout flash blanc
   mainWindow.once('ready-to-show', () => {
+    mainWindow.maximize();
     mainWindow.show();
     mainWindow.focus();
   });
@@ -279,6 +304,19 @@ function registerIpcHandlers() {
     return financeService.savePortfolioHoldings(holdings);
   });
 
+  // Service Météo Haute Précision (Belgique & Europe - AROME / ECMWF)
+  const weatherService = new WeatherService(store);
+  weatherService.startAutoRefresh();
+
+  ipcMain.handle('weather:get-data', async (_event, payload) => {
+    const { city, force } = payload || {};
+    return weatherService.getWeatherData(city, force);
+  });
+
+  ipcMain.handle('weather:search-cities', async (_event, query) => {
+    return weatherService.searchCities(query);
+  });
+
   // Export de fichiers Markdown sur le bureau ou répertoire choisi
   ipcMain.handle('notes:export', async (_event, { filename, content } = {}) => {
     try {
@@ -441,9 +479,28 @@ function registerIpcHandlers() {
 
 // Initialisation globale de l'application
 app.whenReady().then(() => {
+  // Débloquer les iframes intégrées (ex: carte radar satellite météo RainViewer)
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const responseHeaders = { ...details.responseHeaders };
+    delete responseHeaders['x-frame-options'];
+    delete responseHeaders['X-Frame-Options'];
+    delete responseHeaders['content-security-policy'];
+    delete responseHeaders['Content-Security-Policy'];
+    callback({ responseHeaders });
+  });
+
   registerIpcHandlers();
   createMainWindow();
   createTray();
+
+  // Enregistrement du raccourci global Super+A
+  try {
+    globalShortcut.register('Super+A', () => {
+      toggleMainWindow();
+    });
+  } catch (err) {
+    console.warn('[GlobalShortcut] Super+A:', err.message);
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -453,6 +510,10 @@ app.whenReady().then(() => {
       mainWindow.focus();
     }
   });
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
 
 app.on('before-quit', () => {

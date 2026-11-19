@@ -46,6 +46,9 @@ class FinanceService {
       data: {},
     };
     this.chartsCache = new Map();
+    this.crumb = null;
+    this.cookie = null;
+    this.crumbExpires = 0;
     this.initDefaultPortfolio();
   }
 
@@ -125,6 +128,52 @@ class FinanceService {
     }
   }
 
+  async ensureCrumb() {
+    const now = Date.now();
+    if (this.crumb && this.cookie && now < this.crumbExpires) {
+      return { crumb: this.crumb, cookie: this.cookie };
+    }
+
+    try {
+      const cRes = await this.fetchWithTimeout(
+        'https://fc.yahoo.com',
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          },
+        },
+        3000
+      );
+      const cookie = cRes.headers.get('set-cookie');
+      if (!cookie) throw new Error('Aucun cookie reçu de fc.yahoo.com');
+
+      const crumbRes = await this.fetchWithTimeout(
+        'https://query1.finance.yahoo.com/v1/test/getcrumb',
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            Cookie: cookie,
+          },
+        },
+        3000
+      );
+      if (!crumbRes.ok) throw new Error(`getcrumb statut ${crumbRes.status}`);
+      const crumb = await crumbRes.text();
+      if (!crumb || crumb.length > 50 || crumb.includes('<html')) throw new Error('Format de crumb invalide');
+
+      this.crumb = crumb.trim();
+      this.cookie = cookie;
+      this.crumbExpires = now + 12 * 3600 * 1000;
+      return { crumb: this.crumb, cookie: this.cookie };
+    } catch (err) {
+      this.crumb = null;
+      this.cookie = null;
+      throw err;
+    }
+  }
+
   async fetchSingleQuote(assetId, info) {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(info.symbol)}?range=1d&interval=15m`;
     try {
@@ -173,40 +222,108 @@ class FinanceService {
       };
     }
 
-    const entries = Object.entries(YAHOO_MAPPING);
-    const promises = entries.map(async ([id, info]) => {
-      const quote = await this.fetchSingleQuote(id, info);
-      return { id, quote };
-    });
-
-    const results = await Promise.allSettled(promises);
     const updated = { ...this.quotesCache.data };
+    let batchSuccess = false;
 
-    for (const res of results) {
-      if (res.status === 'fulfilled' && res.value?.quote) {
-        updated[res.value.id] = res.value.quote;
-      }
-    }
-
-    // Récupérer également les cotations en EUR pour BTC / ETH via CoinGecko pour affiner
+    // 1. TENTATIVE ULTRA-RAPIDE EN BATCH UNIQUE (~120ms pour 23 actifs)
     try {
-      const cgRes = await this.fetchWithTimeout(
-        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd,eur&include_24hr_change=true',
-        {},
+      const { crumb, cookie } = await this.ensureCrumb();
+
+      const symbolToIds = new Map();
+      for (const [id, info] of Object.entries(YAHOO_MAPPING)) {
+        if (!symbolToIds.has(info.symbol)) symbolToIds.set(info.symbol, []);
+        symbolToIds.get(info.symbol).push(id);
+      }
+
+      const symbolsList = Array.from(symbolToIds.keys()).join(',');
+      const batchUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbolsList)}&crumb=${encodeURIComponent(crumb)}`;
+
+      const res = await this.fetchWithTimeout(
+        batchUrl,
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            Cookie: cookie,
+          },
+        },
         3500
       );
-      if (cgRes.ok) {
-        const cg = await cgRes.json();
-        if (cg.bitcoin && updated.btc) {
-          updated.btc.priceEur = cg.bitcoin.eur;
-          updated.btc.change24h = Number((cg.bitcoin.eur_24h_change || 0).toFixed(2));
+
+      if (res.ok) {
+        const json = await res.json();
+        const results = json.quoteResponse?.result || [];
+
+        // Récupérer le taux de change EUR/USD directement du batch sans aucun appel externe
+        let eurUsdRate = 1.08;
+        const eurusdItem = results.find((r) => r.symbol === 'EURUSD=X');
+        if (eurusdItem?.regularMarketPrice) {
+          eurUsdRate = eurusdItem.regularMarketPrice;
         }
-        if (cg.ethereum && updated.eth) {
-          updated.eth.priceEur = cg.ethereum.eur;
-          updated.eth.change24h = Number((cg.ethereum.eur_24h_change || 0).toFixed(2));
+
+        for (const item of results) {
+          const matchingIds = symbolToIds.get(item.symbol) || [];
+          for (const assetId of matchingIds) {
+            const info = YAHOO_MAPPING[assetId];
+            const price = item.regularMarketPrice;
+            if (price === undefined || price === null) continue;
+
+            const prev = item.regularMarketPreviousClose || price;
+            const change =
+              item.regularMarketChangePercent !== undefined && item.regularMarketChangePercent !== null
+                ? Number(item.regularMarketChangePercent.toFixed(2))
+                : prev > 0
+                ? Number((((price - prev) / prev) * 100).toFixed(2))
+                : 0.0;
+            const dayLow = item.regularMarketDayLow || price;
+            const dayHigh = item.regularMarketDayHigh || price;
+
+            const quoteObj = {
+              id: assetId,
+              symbol: info.symbol,
+              name: info.name,
+              type: info.type,
+              unit: info.unit,
+              price: Number(price < 2 ? price.toFixed(4) : price.toFixed(2)),
+              change,
+              dayLow: Number(dayLow < 2 ? dayLow.toFixed(4) : dayLow.toFixed(2)),
+              dayHigh: Number(dayHigh < 2 ? dayHigh.toFixed(4) : dayHigh.toFixed(2)),
+              currency: item.currency || (info.unit === '€' ? 'EUR' : 'USD'),
+              marketTime: item.regularMarketTime,
+            };
+
+            // Conversion instantanée EUR sans aucun appel API supplémentaire
+            if (quoteObj.currency === 'USD' && eurUsdRate > 0) {
+              quoteObj.priceEur = Number((price / eurUsdRate).toFixed(2));
+            } else if (quoteObj.currency === 'EUR') {
+              quoteObj.priceEur = quoteObj.price;
+            }
+
+            updated[assetId] = quoteObj;
+          }
+        }
+
+        batchSuccess = Object.keys(updated).length > 0;
+      }
+    } catch (err) {
+      console.warn('[FinanceService] Le batch quote a échoué, bascule sur requêtes unitaires:', err.message);
+    }
+
+    // 2. FALLBACK DE SECOURS (Si le batch est bloqué ou échoue)
+    if (!batchSuccess) {
+      const entries = Object.entries(YAHOO_MAPPING);
+      const promises = entries.map(async ([id, info]) => {
+        const quote = await this.fetchSingleQuote(id, info);
+        return { id, quote };
+      });
+
+      const results = await Promise.allSettled(promises);
+      for (const res of results) {
+        if (res.status === 'fulfilled' && res.value?.quote) {
+          updated[res.value.id] = res.value.quote;
         }
       }
-    } catch (_) {}
+    }
 
     if (Object.keys(updated).length > 0) {
       this.quotesCache.data = updated;

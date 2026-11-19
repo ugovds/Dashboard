@@ -60,6 +60,30 @@
       return null;
     },
 
+    // Récupère les prévisions météo haute précision via le backend natif
+    async getWeather(city, force = false) {
+      if (isElectron && typeof window.desktopAPI.getWeather === 'function') {
+        try {
+          return await window.desktopAPI.getWeather(city, force);
+        } catch (err) {
+          console.error('[Desktop Bridge] Erreur getWeather:', err);
+        }
+      }
+      return null;
+    },
+
+    // Recherche de villes pour autocomplétion
+    async searchWeatherCities(query) {
+      if (isElectron && typeof window.desktopAPI.searchWeatherCities === 'function') {
+        try {
+          return await window.desktopAPI.searchWeatherCities(query);
+        } catch (err) {
+          console.error('[Desktop Bridge] Erreur searchWeatherCities:', err);
+        }
+      }
+      return [];
+    },
+
     // Télémétrie système (CPU, RAM réelle)
     async getSystemMetrics() {
       if (isElectron && typeof window.desktopAPI.getSystemInfo === 'function') {

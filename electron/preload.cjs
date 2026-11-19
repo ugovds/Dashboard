@@ -35,6 +35,10 @@ contextBridge.exposeInMainWorld('desktopAPI', {
   getPortfolio: () => ipcRenderer.invoke('finance:get-portfolio'),
   savePortfolio: (holdings) => ipcRenderer.invoke('finance:save-portfolio', holdings),
 
+  // Service Météo Haute Précision (Belgique & Europe)
+  getWeather: (city, force) => ipcRenderer.invoke('weather:get-data', { city, force }),
+  searchWeatherCities: (query) => ipcRenderer.invoke('weather:search-cities', query),
+
   // Notifications Natives OS
   showNotification: (payload) => ipcRenderer.send('notification:show', payload),
 
