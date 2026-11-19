@@ -660,10 +660,12 @@ const EMPTY_PORTFOLIO_STATE = {
   positions: {},
   dcaRules: {
     dayOfMonth: 19,
-    allocations: {}
+    allocations: {},
+    enabled: true
   },
   totalInvested: 0,
   lastDcaExecutionMonth: null,
+  skippedDcaMonths: [],
   history: [],
   selectedTimeframe: '24h'
 };
@@ -733,10 +735,12 @@ const DEMO_PORTFOLIO_STATE = {
       'lyp6': 20,
       'xmme': 10,
       'nvda': 0
-    }
+    },
+    enabled: true
   },
   totalInvested: 1515.08,
   lastDcaExecutionMonth: '2026-10',
+  skippedDcaMonths: [],
   history: [
     {
       id: 'tx_20261020_nvda',
@@ -744,7 +748,10 @@ const DEMO_PORTFOLIO_STATE = {
       type: 'manual',
       title: 'Achat 1.00 action NVIDIA (NVDA)',
       amount: 194.90,
-      note: '1 action @ 214,75 $ (194,90 €) sur compte USD'
+      note: '1 action @ 214,75 $ (194,90 €) sur compte USD',
+      breakdown: [
+        { assetId: 'nvda', assetName: 'NVIDIA Corporation', amount: 194.90, shares: 1.00, unitPrice: 194.90 }
+      ]
     },
     {
       id: 'tx_20261019_dca',
@@ -752,7 +759,12 @@ const DEMO_PORTFOLIO_STATE = {
       type: 'auto',
       title: 'Versement DCA Mensuel (60 €)',
       amount: 60.00,
-      note: '+30€ 10AP (0.218 p.), +20€ LYP6 (0.063 p.), +10€ XMME (0.126 p.)'
+      note: '+30€ 10AP (0.218 p.), +20€ LYP6 (0.063 p.), +10€ XMME (0.126 p.)',
+      breakdown: [
+        { assetId: '10ap', assetName: 'Amundi S&P 500', amount: 30, shares: 0.218 },
+        { assetId: 'lyp6', assetName: 'Amundi Stoxx 600', amount: 20, shares: 0.063 },
+        { assetId: 'xmme', assetName: 'MSCI Emerging Mkts', amount: 10, shares: 0.126 }
+      ]
     },
     {
       id: 'tx_20260918_dca',
@@ -760,7 +772,12 @@ const DEMO_PORTFOLIO_STATE = {
       type: 'auto',
       title: 'Versement DCA Mensuel (60 €)',
       amount: 60.00,
-      note: '+30€ 10AP (0.225 p.), +20€ LYP6 (0.063 p.), +10€ XMME (0.122 p.)'
+      note: '+30€ 10AP (0.225 p.), +20€ LYP6 (0.063 p.), +10€ XMME (0.122 p.)',
+      breakdown: [
+        { assetId: '10ap', assetName: 'Amundi S&P 500', amount: 30, shares: 0.225 },
+        { assetId: 'lyp6', assetName: 'Amundi Stoxx 600', amount: 20, shares: 0.063 },
+        { assetId: 'xmme', assetName: 'MSCI Emerging Mkts', amount: 10, shares: 0.122 }
+      ]
     },
     {
       id: 'tx_20260824_buy',
@@ -768,7 +785,11 @@ const DEMO_PORTFOLIO_STATE = {
       type: 'manual',
       title: 'Renforcement 10AP & LYP6 (300 €)',
       amount: 300.00,
-      note: '+200€ 10AP (1.520 p. @ 131,58€) + 100€ LYP6 (0.310 p. @ 322,15€)'
+      note: '+200€ 10AP (1.520 p. @ 131,58€) + 100€ LYP6 (0.310 p. @ 322,15€)',
+      breakdown: [
+        { assetId: '10ap', assetName: 'Amundi S&P 500', amount: 200, shares: 1.520 },
+        { assetId: 'lyp6', assetName: 'Amundi Stoxx 600', amount: 100, shares: 0.310 }
+      ]
     },
     {
       id: 'tx_20260813_arb',
@@ -776,7 +797,10 @@ const DEMO_PORTFOLIO_STATE = {
       type: 'manual',
       title: 'Arbitrage Vente 6TVM -> Achat 10AP (300,18 €)',
       amount: 300.18,
-      note: 'Vente 4.327 p. 6TVM (+300,18€) et achat 2.232 p. 10AP (134,50€)'
+      note: 'Vente 4.327 p. 6TVM (+300,18€) et achat 2.232 p. 10AP (134,50€)',
+      breakdown: [
+        { assetId: '10ap', assetName: 'Amundi S&P 500', amount: 300.18, shares: 2.232 }
+      ]
     },
     {
       id: 'tx_20260811_init2',
@@ -784,7 +808,11 @@ const DEMO_PORTFOLIO_STATE = {
       type: 'manual',
       title: 'Apport & Achats PEA (600 €)',
       amount: 600.00,
-      note: '+200€ LYP6 (0.614 p.), +200€ XMME (2.524 p.), +200€ 6TVM (2.883 p.)'
+      note: '+200€ LYP6 (0.614 p.), +200€ XMME (2.524 p.), +200€ 6TVM (2.883 p.)',
+      breakdown: [
+        { assetId: 'lyp6', assetName: 'Amundi Stoxx 600', amount: 200, shares: 0.614 },
+        { assetId: 'xmme', assetName: 'MSCI Emerging Mkts', amount: 200, shares: 2.524 }
+      ]
     },
     {
       id: 'tx_20260810_init1',
@@ -792,7 +820,11 @@ const DEMO_PORTFOLIO_STATE = {
       type: 'manual',
       title: 'Constitution Initiale PEA (300 €)',
       amount: 300.00,
-      note: '+100€ LYP6 (0.307 p.), +100€ 6TVM (1.444 p.), +100€ XMME (1.262 p.)'
+      note: '+100€ LYP6 (0.307 p.), +100€ 6TVM (1.444 p.), +100€ XMME (1.262 p.)',
+      breakdown: [
+        { assetId: 'lyp6', assetName: 'Amundi Stoxx 600', amount: 100, shares: 0.307 },
+        { assetId: 'xmme', assetName: 'MSCI Emerging Mkts', amount: 100, shares: 1.262 }
+      ]
     }
   ],
   selectedTimeframe: '24h'
@@ -850,9 +882,11 @@ function loadPortfolioState() {
         totalInvested: holdings.length === 0 ? 0 : Number(realInvested.toFixed(2)),
         dcaRules: {
           dayOfMonth: parseInt(parsed.dcaRules?.dayOfMonth, 10) || 19,
-          allocations: holdings.length === 0 ? {} : allocations
+          allocations: holdings.length === 0 ? {} : allocations,
+          enabled: parsed.dcaRules?.enabled !== false
         },
         lastDcaExecutionMonth: holdings.length === 0 ? null : (parsed.lastDcaExecutionMonth || null),
+        skippedDcaMonths: Array.isArray(parsed.skippedDcaMonths) ? parsed.skippedDcaMonths : [],
         history: Array.isArray(parsed.history) ? parsed.history : [],
         selectedTimeframe: parsed.selectedTimeframe || '24h'
       };
@@ -877,6 +911,12 @@ function savePortfolioState() {
     portfolioState.positions = positions;
     if (portfolioState.dcaRules) {
       portfolioState.dcaRules.allocations = allocations;
+      if (portfolioState.dcaRules.enabled === undefined) {
+        portfolioState.dcaRules.enabled = true;
+      }
+    }
+    if (!Array.isArray(portfolioState.skippedDcaMonths)) {
+      portfolioState.skippedDcaMonths = [];
     }
     const realInvested = (portfolioState.holdings || []).reduce((sum, h) => sum + (Number(h.shares || 0) * Number(h.buyPrice || 0)), 0);
     portfolioState.totalInvested = (portfolioState.holdings && portfolioState.holdings.length > 0) ? Number(realInvested.toFixed(2)) : 0;
@@ -1028,29 +1068,47 @@ function calculatePortfolioSummary() {
  * Moteur d'exécution automatique du DCA au 19 du mois
  */
 function checkAndApplyScheduledDca() {
+  if (portfolioState.dcaRules?.enabled === false) return;
   const now = new Date();
   const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const currentDay = now.getDate();
-  const targetDay = portfolioState.dcaRules.dayOfMonth || 19;
+  const targetDay = portfolioState.dcaRules?.dayOfMonth || 19;
+
+  // Si l'utilisateur a expressément ignoré ou annulé le versement pour ce mois
+  if (Array.isArray(portfolioState.skippedDcaMonths) && portfolioState.skippedDcaMonths.includes(currentYearMonth)) {
+    return;
+  }
 
   if (currentDay >= targetDay) {
     if (portfolioState.lastDcaExecutionMonth !== currentYearMonth) {
       let addedEur = 0;
       const details = [];
+      const breakdown = [];
 
       (portfolioState.holdings || []).forEach((h) => {
-        const alloc = portfolioState.dcaRules.allocations[h.id] ?? (h.dcaMonthly || 0);
+        const alloc = portfolioState.dcaRules?.allocations?.[h.id] ?? (h.dcaMonthly || 0);
         if (alloc > 0) {
           const priceEur = getAssetPriceInEur(h.id);
           const sharesBought = alloc / priceEur;
           const oldCost = h.shares * h.buyPrice;
           const newCost = alloc;
           const newShares = h.shares + sharesBought;
+          const oldShares = h.shares;
+          const oldBuyPrice = h.buyPrice;
           h.buyPrice = Number(((oldCost + newCost) / newShares).toFixed(2));
           h.shares = Number(newShares.toFixed(4));
           portfolioState.positions[h.id] = h.shares;
           addedEur += alloc;
           details.push(`+${alloc}€ ${h.shortName || h.id.toUpperCase()} (+${sharesBought.toFixed(3)} parts)`);
+          breakdown.push({
+            assetId: h.id,
+            assetName: h.shortName || h.name,
+            amount: alloc,
+            shares: Number(sharesBought.toFixed(4)),
+            unitPrice: priceEur,
+            prevShares: oldShares,
+            prevBuyPrice: oldBuyPrice
+          });
         }
       });
 
@@ -1063,7 +1121,8 @@ function checkAndApplyScheduledDca() {
           type: 'auto',
           title: `Versement DCA Automatique (${targetDay} ${now.toLocaleString('fr-FR', { month: 'short' })})`,
           amount: addedEur,
-          note: details.join(', ')
+          note: details.join(', '),
+          breakdown
         });
 
         savePortfolioState();
@@ -1080,20 +1139,32 @@ function simulateDcaExecution() {
   const now = new Date();
   let addedEur = 0;
   const details = [];
+  const breakdown = [];
 
   (portfolioState.holdings || []).forEach((h) => {
-    const alloc = portfolioState.dcaRules.allocations[h.id] ?? (h.dcaMonthly || 0);
+    const alloc = portfolioState.dcaRules?.allocations?.[h.id] ?? (h.dcaMonthly || 0);
     if (alloc > 0) {
       const priceEur = getAssetPriceInEur(h.id);
       const sharesBought = alloc / priceEur;
       const oldCost = h.shares * h.buyPrice;
       const newCost = alloc;
       const newShares = h.shares + sharesBought;
+      const oldShares = h.shares;
+      const oldBuyPrice = h.buyPrice;
       h.buyPrice = Number(((oldCost + newCost) / newShares).toFixed(2));
       h.shares = Number(newShares.toFixed(4));
       portfolioState.positions[h.id] = h.shares;
       addedEur += alloc;
       details.push(`+${alloc}€ ${h.shortName || h.id.toUpperCase()} (+${sharesBought.toFixed(3)} parts)`);
+      breakdown.push({
+        assetId: h.id,
+        assetName: h.shortName || h.name,
+        amount: alloc,
+        shares: Number(sharesBought.toFixed(4)),
+        unitPrice: priceEur,
+        prevShares: oldShares,
+        prevBuyPrice: oldBuyPrice
+      });
     }
   });
 
@@ -1113,7 +1184,8 @@ function simulateDcaExecution() {
     type: 'simulation',
     title: `Simulation Versement DCA`,
     amount: addedEur,
-    note: details.join(', ')
+    note: details.join(', '),
+    breakdown
   });
 
   savePortfolioState();
@@ -1136,11 +1208,14 @@ function simulateDcaExecution() {
  */
 function getNextDcaDateInfo() {
   const now = new Date();
+  const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const isEnabled = portfolioState.dcaRules?.enabled !== false;
+  const isSkippedThisMonth = Array.isArray(portfolioState.skippedDcaMonths) && portfolioState.skippedDcaMonths.includes(currentYearMonth);
   const targetDay = portfolioState.dcaRules?.dayOfMonth || 19;
   let targetYear = now.getFullYear();
   let targetMonth = now.getMonth();
 
-  if (now.getDate() >= targetDay) {
+  if (now.getDate() >= targetDay || isSkippedThisMonth) {
     targetMonth += 1;
     if (targetMonth > 11) {
       targetMonth = 0;
@@ -1163,7 +1238,9 @@ function getNextDcaDateInfo() {
     dateStr: `${targetDay} ${monthNames[targetMonth]}`,
     fullDateStr: `${targetDay} ${monthNames[targetMonth]} ${targetYear}`,
     daysRemaining: diffDays,
-    monthlyTotal: (portfolioState.holdings && portfolioState.holdings.length > 0) ? totalDcaMonthly : 0
+    monthlyTotal: (portfolioState.holdings && portfolioState.holdings.length > 0 && isEnabled) ? totalDcaMonthly : 0,
+    isEnabled,
+    isSkippedThisMonth
   };
 }
 
@@ -1295,19 +1372,25 @@ function getPortfolioChartData(timeframe = '24h') {
     const N = 30;
     const points = [];
     const monthlyMktPct = 3.2;
+    const targetDay = portfolioState.dcaRules?.dayOfMonth || 19;
+    const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const dcaAmount = Object.values(portfolioState.dcaRules?.allocations || {}).reduce((s, v) => s + (Number(v) || 0), 0);
+    const isCurrentMonthSkipped = (portfolioState.skippedDcaMonths || []).includes(currentYearMonth) || portfolioState.dcaRules?.enabled === false;
+    const hasDcaInHistory = (portfolioState.history || []).some((h) => (h.type === 'auto' || h.title?.includes('DCA')) && h.date?.startsWith(currentYearMonth));
+    const isDcaActuallyExecuted = hasDcaInHistory && !isCurrentMonthSkipped;
+    const effectiveDca = isDcaActuallyExecuted ? dcaAmount : 0;
 
-    const startVal = Number(((currentTotal - dcaAmount) / (1 + monthlyMktPct / 100)).toFixed(2));
+    const startVal = Number(((currentTotal - effectiveDca) / (1 + monthlyMktPct / 100)).toFixed(2));
 
     for (let i = 0; i < N; i++) {
       const daysAgo = 29 - i;
       const d = new Date(now.getTime() - daysAgo * 86400000);
-      const isPastOrAt19 = d.getDate() >= (portfolioState.dcaRules.dayOfMonth || 19);
-      const isExactly19 = d.getDate() === (portfolioState.dcaRules.dayOfMonth || 19);
+      const isPastOrAt19 = d.getDate() >= targetDay;
+      const isExactly19 = d.getDate() === targetDay;
 
       const t = i / 29;
-      const baseTrend = startVal + ((currentTotal - dcaAmount) - startVal) * t;
-      const dcaInjection = isPastOrAt19 ? dcaAmount : 0;
+      const baseTrend = startVal + ((currentTotal - effectiveDca) - startVal) * t;
+      const dcaInjection = (isPastOrAt19 && isDcaActuallyExecuted) ? effectiveDca : 0;
       let val = baseTrend + dcaInjection;
       if (i === 0) val = startVal;
       if (i === 29) val = currentTotal;
@@ -1320,8 +1403,8 @@ function getPortfolioChartData(timeframe = '24h') {
         date: d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }),
         changePct: startVal > 0 ? ((val - startVal) / startVal) * 100 : 0,
         changeEur: val - startVal,
-        dcaEvent: isExactly19 && dcaAmount > 0,
-        dcaNote: isExactly19 && dcaAmount > 0 ? `✨ Versement DCA du ${portfolioState.dcaRules.dayOfMonth || 19} : +${dcaAmount} € investis` : null
+        dcaEvent: isExactly19 && isDcaActuallyExecuted && effectiveDca > 0,
+        dcaNote: isExactly19 && isDcaActuallyExecuted && effectiveDca > 0 ? `✨ Versement DCA du ${targetDay} : +${effectiveDca} € investis` : null
       });
     }
 
@@ -1338,9 +1421,11 @@ function getPortfolioChartData(timeframe = '24h') {
       periodChangeEur,
       minVal: Math.min(...prices),
       maxVal: Math.max(...prices),
-      periodDesc: `Évolution sur 30 jours • Versement mensuel DCA de ${dcaAmount} € au ${portfolioState.dcaRules.dayOfMonth || 19} inclus`,
+      periodDesc: isDcaActuallyExecuted && effectiveDca > 0
+        ? `Évolution sur 30 jours • Versement mensuel DCA de ${effectiveDca} € au ${targetDay} inclus`
+        : 'Évolution sur 30 jours glissants (Cours de clôture)',
       axisLabels: { start: 'Il y a 30 jours', mid: 'Il y a 15 jours', end: "Aujourd'hui" },
-      dcaCountText: dcaAmount > 0 ? `1 versement (+${dcaAmount} €)` : '0 versement'
+      dcaCountText: (isDcaActuallyExecuted && effectiveDca > 0) ? `1 versement (+${effectiveDca} €)` : '0 versement'
     };
   }
 
@@ -1349,16 +1434,18 @@ function getPortfolioChartData(timeframe = '24h') {
     const N = 12;
     const points = [];
     const dcaMonthly = Object.values(portfolioState.dcaRules?.allocations || {}).reduce((s, v) => s + (Number(v) || 0), 0);
+    const isEnabled = portfolioState.dcaRules?.enabled !== false;
+    const actualDcaCount = (portfolioState.history || []).filter((h) => (h.type === 'auto' || h.title?.includes('DCA'))).length;
 
-    const totalDcaOverYear = 11 * dcaMonthly;
+    const totalDcaOverYear = isEnabled ? Math.min(11, actualDcaCount || 11) * dcaMonthly : 0;
     const startInvested = Math.max(0, currentInvested - totalDcaOverYear);
     const startVal = Number((startInvested * 1.04).toFixed(2));
 
     for (let i = 0; i < N; i++) {
       const monthsAgo = 11 - i;
       const progress = i / 11;
-      const targetDate = new Date(now.getFullYear(), now.getMonth() - monthsAgo, portfolioState.dcaRules.dayOfMonth || 19);
-      const investedAtMonth = Math.max(0, currentInvested - (monthsAgo * dcaMonthly));
+      const targetDate = new Date(now.getFullYear(), now.getMonth() - monthsAgo, portfolioState.dcaRules?.dayOfMonth || 19);
+      const investedAtMonth = Math.max(0, currentInvested - (monthsAgo * (isEnabled ? dcaMonthly : 0)));
 
       let val = (investedAtMonth * 1.04) * (1.0 + progress * 0.12);
       if (i === 11) val = currentTotal;
@@ -1372,8 +1459,8 @@ function getPortfolioChartData(timeframe = '24h') {
         changePct: startVal > 0 ? ((val - startVal) / startVal) * 100 : 0,
         changeEur: val - startVal,
         invested: investedAtMonth,
-        dcaEvent: dcaMonthly > 0,
-        dcaNote: dcaMonthly > 0 ? `✨ Versement DCA du 19 : +${dcaMonthly} € investis` : null
+        dcaEvent: isEnabled && dcaMonthly > 0,
+        dcaNote: isEnabled && dcaMonthly > 0 ? `✨ Versement DCA du 19 : +${dcaMonthly} € investis` : null
       });
     }
 
@@ -1390,11 +1477,11 @@ function getPortfolioChartData(timeframe = '24h') {
       periodChangeEur,
       minVal: Math.min(...prices),
       maxVal: Math.max(...prices),
-      periodDesc: dcaMonthly > 0
+      periodDesc: isEnabled && dcaMonthly > 0
         ? `Croissance cumulée sur 1 an : Versements programmés (+${dcaMonthly * 12} €) & Intérêts composés`
         : 'Évolution du portefeuille sur les 12 derniers mois',
       axisLabels: { start: 'Il y a 12 mois', mid: 'Il y a 6 mois', end: 'Ce mois-ci' },
-      dcaCountText: dcaMonthly > 0 ? `12 versements (+${dcaMonthly * 12} €)` : '0 versement'
+      dcaCountText: isEnabled && dcaMonthly > 0 ? `${Math.min(12, actualDcaCount || 12)} versement(s)` : '0 versement'
     };
   }
 }
@@ -1854,16 +1941,24 @@ function renderPortfolioModule() {
 
   const statusPill = document.getElementById('portfolio-status-pill');
   if (statusPill) {
-    if (nextDca.monthlyTotal > 0) {
+    if (!nextDca.isEnabled) {
+      statusPill.innerHTML = `<span class="status-dot" style="background: rgba(255,255,255,0.3);"></span> DCA en Pause`;
+    } else if (nextDca.isSkippedThisMonth) {
+      statusPill.innerHTML = `<span class="status-dot" style="background: #fbbf24;"></span> Ce mois sauté (${nextDca.dateStr})`;
+    } else if (nextDca.monthlyTotal > 0) {
       statusPill.innerHTML = `<span class="status-dot pulse-green"></span> DCA Programmé (${nextDca.dateStr})`;
     } else {
       statusPill.innerHTML = `<span class="status-dot" style="background: rgba(255,255,255,0.3);"></span> Aucun DCA actif`;
     }
   }
 
-  if (nextDateEl) nextDateEl.textContent = nextDca.monthlyTotal > 0 ? nextDca.dateStr : '--';
+  if (nextDateEl) nextDateEl.textContent = (nextDca.monthlyTotal > 0 && nextDca.isEnabled) ? nextDca.dateStr : '--';
   if (nextCountdownEl) {
-    if (nextDca.monthlyTotal > 0) {
+    if (!nextDca.isEnabled) {
+      nextCountdownEl.innerHTML = `<i class="fa-regular fa-clock"></i> En pause`;
+    } else if (nextDca.isSkippedThisMonth) {
+      nextCountdownEl.innerHTML = `<i class="fa-regular fa-clock"></i> Sauté ce mois`;
+    } else if (nextDca.monthlyTotal > 0) {
       nextCountdownEl.innerHTML = `<i class="fa-regular fa-clock"></i> Dans ${nextDca.daysRemaining} jour${nextDca.daysRemaining > 1 ? 's' : ''}`;
     } else {
       nextCountdownEl.innerHTML = `<i class="fa-regular fa-clock"></i> Inactif`;
@@ -1952,13 +2047,21 @@ function renderPortfolioPositionsTab() {
             <div class="holding-icon icon-${h.colorClass}" style="width: 34px; height: 34px; font-size: 1rem;">
               <i class="${h.icon}"></i>
             </div>
-            <div>
-              <div class="pm-edit-card-title">${h.name}</div>
-              <div class="pm-edit-card-sym">${h.symbol} • ${h.type.toUpperCase()}</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <input type="text" class="pm-input-ctrl pm-field-name" data-id="${h.id}" value="${h.name || ''}" title="Nom de l'actif" style="font-weight: 700; font-size: 0.88rem; padding: 2px 6px; border: 1px solid transparent; background: transparent;" />
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                <input type="text" class="pm-input-ctrl pm-field-symbol" data-id="${h.id}" value="${h.symbol || ''}" title="Symbole / Ticker" style="font-size: 0.72rem; color: rgba(255,255,255,0.6); padding: 1px 5px; width: 130px; border: 1px solid transparent; background: transparent;" />
+                <span style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">• ${(h.type || 'stock').toUpperCase()}</span>
+              </div>
             </div>
           </div>
           <div class="pm-edit-card-right">
             <span class="pm-live-badge" title="Cours actuel en direct converti en euros">Direct : ${livePriceFormatted} €</span>
+            <button type="button" class="pm-mini-btn primary pm-save-line-btn" data-asset-id="${h.id}" title="Enregistrer les modifications de cette ligne">
+              <i class="fa-solid fa-check"></i> Enregistrer
+            </button>
             <button type="button" class="pm-delete-row-btn" data-asset-id="${h.id}" title="Supprimer cet actif du portefeuille">
               <i class="fa-solid fa-trash-can"></i>
             </button>
@@ -2030,6 +2133,7 @@ function renderPortfolioPositionsTab() {
     const dateInput = card.querySelector('.pm-field-date');
     const liveFillBtn = card.querySelector('.pm-btn-live-fill');
     const deleteBtn = card.querySelector('.pm-delete-row-btn');
+    const saveLineBtn = card.querySelector('.pm-save-line-btn');
     const liveCustomInput = card.querySelector('.pm-field-live-custom');
 
     const updateLineStats = () => {
@@ -2066,6 +2170,46 @@ function renderPortfolioPositionsTab() {
       if (lp && priceInput) {
         priceInput.value = lp;
         updateLineStats();
+      }
+    });
+
+    saveLineBtn?.addEventListener('click', () => {
+      const h = (portfolioState.holdings || []).find((x) => x.id === id);
+      if (!h) return;
+      const d = dateInput?.value;
+      const p = parseFloat(priceInput?.value);
+      const s = parseFloat(sharesInput?.value);
+      const dca = parseFloat(card.querySelector('.pm-field-dca')?.value);
+      const notes = card.querySelector('.pm-field-notes')?.value;
+      const nameVal = card.querySelector('.pm-field-name')?.value;
+      const symVal = card.querySelector('.pm-field-symbol')?.value;
+      const liveCustom = parseFloat(liveCustomInput?.value);
+
+      if (d) h.buyDate = d;
+      if (!isNaN(p) && p >= 0) h.buyPrice = p;
+      if (!isNaN(s) && s >= 0) h.shares = s;
+      if (!isNaN(dca) && dca >= 0) {
+        h.dcaMonthly = dca;
+        if (portfolioState.dcaRules) portfolioState.dcaRules.allocations[h.id] = dca;
+      }
+      if (typeof notes === 'string') h.notes = notes.trim();
+      if (nameVal) h.name = nameVal.trim();
+      if (symVal) h.symbol = symVal.trim().toUpperCase();
+      if (!isNaN(liveCustom) && liveCustom >= 0) {
+        const custAsset = marketAssets.find((a) => a.id === h.id);
+        if (custAsset) {
+          custAsset.basePrice = liveCustom;
+          saveMarketAssets();
+        }
+      }
+      portfolioState.positions[h.id] = h.shares;
+
+      savePortfolioState();
+      renderPortfolioModule();
+      if (typeof renderDashboardMarkets === 'function') renderDashboardMarkets();
+      if (typeof renderDashboardPortfolio === 'function') renderDashboardPortfolio();
+      if (typeof showToast === 'function') {
+        showToast(`Ligne ${h.shortName || h.id.toUpperCase()} enregistrée avec succès !`, 'success');
       }
     });
 
@@ -2320,7 +2464,16 @@ function initAddAssetTab() {
         type: 'manual',
         title: `Achat de ${shares} part(s) de ${assetShortName || assetId.toUpperCase()}`,
         amount: shares * buyPrice,
-        note: `Acheté à ${buyPrice.toFixed(2)} € / part (Total : ${(shares * buyPrice).toFixed(2)} €)`
+        note: `Acheté à ${buyPrice.toFixed(2)} € / part (Total : ${(shares * buyPrice).toFixed(2)} €)`,
+        breakdown: [
+          {
+            assetId,
+            assetName: assetShortName || assetId.toUpperCase(),
+            amount: shares * buyPrice,
+            shares,
+            unitPrice: buyPrice
+          }
+        ]
       });
 
       savePortfolioState();
@@ -2339,19 +2492,559 @@ function initAddAssetTab() {
 }
 
 /**
+ * Extrait les détails et la ventilation par actif d'une transaction/versement
+ */
+function parseTransactionBreakdown(item) {
+  if (!item) return [];
+  if (Array.isArray(item.breakdown) && item.breakdown.length > 0) {
+    return item.breakdown;
+  }
+  const results = [];
+  const note = item.note || '';
+  const title = item.title || '';
+
+  // 1. Format versement DCA: "+30€ 10AP (0.218 p.)" ou "+30€ 10AP (+0.218 parts)" ou "+200€ 10AP (1.520 p. @ 131,58€)"
+  const dcaRegex = /\+?\s*([\d.,]+)\s*€\s+([A-Za-z0-9_-]+)(?:\s*\(\+?([\d.,]+)\s*(?:p\.|parts|part)?(?:[^)]*)?\))?/gi;
+  let match;
+  while ((match = dcaRegex.exec(note)) !== null) {
+    const amt = parseFloat(match[1].replace(',', '.'));
+    const rawSym = match[2].toLowerCase();
+    const shs = match[3] ? parseFloat(match[3].replace(',', '.')) : 0;
+    const hold = (portfolioState.holdings || []).find((h) => h.id.toLowerCase() === rawSym || h.symbol?.toLowerCase().includes(rawSym));
+    results.push({
+      assetId: hold ? hold.id : rawSym,
+      assetName: hold ? (hold.shortName || hold.name) : rawSym.toUpperCase(),
+      amount: amt,
+      shares: shs
+    });
+  }
+  if (results.length > 0) return results;
+
+  // 2. Format Achat dans le titre: "Achat de 4.00 part(s) de 10AP" ou "Achat 1.00 action NVIDIA (NVDA)"
+  const buyTitleRegex = /Achat(?:\s+de)?\s+([\d.,]+)\s+(?:action|part)(?:\(s\)|s)?\s+(?:de\s+)?([A-Za-z0-9_-]+)/i;
+  const tMatch = title.match(buyTitleRegex);
+  if (tMatch) {
+    const rawSym = tMatch[2].toLowerCase();
+    const hold = (portfolioState.holdings || []).find((h) => h.id.toLowerCase() === rawSym || h.symbol?.toLowerCase().includes(rawSym));
+    results.push({
+      assetId: hold ? hold.id : rawSym,
+      assetName: hold ? (hold.shortName || hold.name) : rawSym.toUpperCase(),
+      amount: Number(item.amount) || 0,
+      shares: parseFloat(tMatch[1].replace(',', '.'))
+    });
+    return results;
+  }
+
+  // 3. Fallback avec parenthèses ticker
+  const symParenMatch = title.match(/\(([A-Za-z0-9_-]+)\)/);
+  if (symParenMatch) {
+    const rawSym = symParenMatch[1].toLowerCase();
+    const hold = (portfolioState.holdings || []).find((h) => h.id.toLowerCase() === rawSym || h.symbol?.toLowerCase().includes(rawSym));
+    const numMatch = (title + ' ' + note).match(/([\d.,]+)\s+(?:action|part)/i);
+    const shs = numMatch ? parseFloat(numMatch[1].replace(',', '.')) : 1;
+    results.push({
+      assetId: hold ? hold.id : rawSym,
+      assetName: hold ? (hold.shortName || hold.name) : rawSym.toUpperCase(),
+      amount: Number(item.amount) || 0,
+      shares: shs
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Supprime un versement ou une transaction du portefeuille avec rollback automatique
+ */
+function deletePortfolioTransaction(txId, options = {}) {
+  const { rollbackImpact = true, markSkipped = true } = options;
+  const txIndex = (portfolioState.history || []).findIndex((t) => t.id === txId);
+  if (txIndex === -1) return false;
+
+  const tx = portfolioState.history[txIndex];
+  const now = new Date();
+  const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  // 1. Déduction / Annulation de l'impact sur les positions et le PRU
+  if (rollbackImpact) {
+    const breakdown = parseTransactionBreakdown(tx);
+    breakdown.forEach((item) => {
+      const h = (portfolioState.holdings || []).find((x) => x.id.toLowerCase() === item.assetId.toLowerCase());
+      if (h) {
+        if (typeof item.prevShares === 'number' && typeof item.prevBuyPrice === 'number' && item.prevShares > 0) {
+          h.shares = Number(item.prevShares.toFixed(4));
+          h.buyPrice = Number(item.prevBuyPrice.toFixed(2));
+        } else {
+          const sharesToDeduct = Number(item.shares || item.sharesAdded || 0);
+          const amountToDeduct = Number(item.amount || 0);
+          const currentCost = h.shares * h.buyPrice;
+          const newShares = Math.max(0, h.shares - sharesToDeduct);
+          const newCost = Math.max(0, currentCost - amountToDeduct);
+          h.shares = Number(newShares.toFixed(4));
+          h.buyPrice = newShares > 0 ? Number((newCost / newShares).toFixed(2)) : h.buyPrice;
+        }
+        portfolioState.positions[h.id] = h.shares;
+      }
+    });
+
+    if (typeof tx.amount === 'number' && tx.amount > 0) {
+      portfolioState.totalInvested = Math.max(0, (portfolioState.totalInvested || 0) - tx.amount);
+    }
+  }
+
+  // 2. Gestion de l'annulation du DCA du mois courant pour éviter toute réexécution intempestive
+  const txMonth = tx.date ? tx.date.substring(0, 7) : null;
+  const isAutoDca = tx.type === 'auto' || tx.id.startsWith('dca_') || tx.title?.includes('DCA');
+
+  if (markSkipped && (isAutoDca || txMonth === currentYearMonth) && txMonth) {
+    if (!Array.isArray(portfolioState.skippedDcaMonths)) {
+      portfolioState.skippedDcaMonths = [];
+    }
+    if (!portfolioState.skippedDcaMonths.includes(txMonth)) {
+      portfolioState.skippedDcaMonths.push(txMonth);
+    }
+  }
+
+  // 3. Suppression de la transaction
+  portfolioState.history.splice(txIndex, 1);
+
+  // 4. Sauvegarde et mise à jour de l'affichage
+  savePortfolioState();
+  renderPortfolioModule();
+  if (typeof renderDashboardMarkets === 'function') renderDashboardMarkets();
+  if (typeof renderDashboardPortfolio === 'function') renderDashboardPortfolio();
+  renderPortfolioHistoryTable();
+  renderPortfolioPositionsTab();
+  renderPortfolioDcaTab();
+
+  if (typeof showToast === 'function') {
+    showToast(`Versement de ${Number(tx.amount || 0).toFixed(2)} € supprimé et portefeuille réajusté !`, 'success');
+  }
+
+  return true;
+}
+
+/**
+ * Ouvre la modale pour modifier un versement existant
+ */
+function openEditTransactionModal(txId) {
+  const modal = document.getElementById('portfolio-tx-modal');
+  const tx = (portfolioState.history || []).find((t) => t.id === txId);
+  if (!modal || !tx) return;
+
+  const titleEl = document.getElementById('pm-tx-modal-title');
+  const subEl = document.getElementById('pm-tx-modal-sub');
+  if (titleEl) titleEl.textContent = 'Modifier le Versement';
+  if (subEl) subEl.textContent = 'Ajustez la date, le montant ou supprimez ce versement';
+
+  const idInput = document.getElementById('pm-tx-id');
+  const dateInput = document.getElementById('pm-tx-date');
+  const typeSelect = document.getElementById('pm-tx-type');
+  const txTitleInput = document.getElementById('pm-tx-title');
+  const amountInput = document.getElementById('pm-tx-amount');
+  const noteInput = document.getElementById('pm-tx-note');
+
+  if (idInput) idInput.value = tx.id;
+  if (dateInput) dateInput.value = tx.date || new Date().toISOString().split('T')[0];
+  if (typeSelect) typeSelect.value = tx.type || 'auto';
+  if (txTitleInput) txTitleInput.value = tx.title || '';
+  if (amountInput) {
+    amountInput.value = (Number(tx.amount) || 0).toFixed(2);
+    amountInput.dataset.manualEdited = 'true';
+  }
+  if (noteInput) noteInput.value = tx.note || '';
+
+  const deleteBtn = document.getElementById('pm-tx-delete-btn');
+  if (deleteBtn) deleteBtn.style.display = 'inline-flex';
+
+  renderTxAllocInputs(tx);
+
+  modal.classList.remove('is-hidden');
+  modal.removeAttribute('hidden');
+  modal.style.display = 'flex';
+}
+
+/**
+ * Ouvre la modale pour créer un nouveau versement manuel
+ */
+function openAddTransactionModal() {
+  const modal = document.getElementById('portfolio-tx-modal');
+  if (!modal) return;
+
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0];
+
+  const titleEl = document.getElementById('pm-tx-modal-title');
+  const subEl = document.getElementById('pm-tx-modal-sub');
+  if (titleEl) titleEl.textContent = 'Nouveau Versement / Opération';
+  if (subEl) subEl.textContent = 'Enregistrez un versement ou un apport dans votre portefeuille';
+
+  const idInput = document.getElementById('pm-tx-id');
+  const dateInput = document.getElementById('pm-tx-date');
+  const typeSelect = document.getElementById('pm-tx-type');
+  const txTitleInput = document.getElementById('pm-tx-title');
+  const amountInput = document.getElementById('pm-tx-amount');
+  const noteInput = document.getElementById('pm-tx-note');
+
+  if (idInput) idInput.value = 'new';
+  if (dateInput) dateInput.value = dateStr;
+  if (typeSelect) typeSelect.value = 'manual';
+  if (txTitleInput) txTitleInput.value = 'Versement portefeuille';
+  if (amountInput) {
+    amountInput.value = '60.00';
+    delete amountInput.dataset.manualEdited;
+  }
+  if (noteInput) noteInput.value = '';
+
+  const deleteBtn = document.getElementById('pm-tx-delete-btn');
+  if (deleteBtn) deleteBtn.style.display = 'none';
+
+  const dummyTx = {
+    amount: 60,
+    breakdown: (portfolioState.holdings || []).map((h) => ({
+      assetId: h.id,
+      assetName: h.shortName || h.name,
+      amount: portfolioState.dcaRules?.allocations?.[h.id] ?? (h.dcaMonthly || 0)
+    }))
+  };
+  renderTxAllocInputs(dummyTx);
+
+  modal.classList.remove('is-hidden');
+  modal.removeAttribute('hidden');
+  modal.style.display = 'flex';
+}
+
+/**
+ * Rendu des champs d'allocation par actif dans la modale versement
+ */
+function renderTxAllocInputs(tx) {
+  const container = document.getElementById('pm-tx-alloc-list');
+  const sumEl = document.getElementById('pm-tx-alloc-sum');
+  if (!container) return;
+
+  const breakdown = parseTransactionBreakdown(tx);
+  const holdings = portfolioState.holdings || [];
+
+  if (holdings.length === 0) {
+    container.innerHTML = '<div style="font-size: 0.78rem; color: rgba(255,255,255,0.45); padding: 4px 0;">Aucun actif dans le portefeuille.</div>';
+    if (sumEl) sumEl.textContent = '0,00 €';
+    return;
+  }
+
+  container.innerHTML = holdings.map((h) => {
+    const existingAlloc = breakdown.find((b) => b.assetId.toLowerCase() === h.id.toLowerCase());
+    const val = existingAlloc ? (Number(existingAlloc.amount) || 0) : 0;
+    return `
+      <div class="pm-tx-alloc-row">
+        <div class="pm-tx-alloc-asset">
+          <i class="${h.icon || 'fa-solid fa-chart-line'}" style="color: #34d399; font-size: 0.85rem;"></i>
+          <span>${h.shortName || h.name}</span>
+        </div>
+        <div class="pm-input-with-unit" style="max-width: 130px;">
+          <input type="number" step="0.01" min="0" class="pm-tx-alloc-field" data-id="${h.id}" value="${val.toFixed(2)}" />
+          <span class="unit">€</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const updateAllocSum = () => {
+    let sum = 0;
+    container.querySelectorAll('.pm-tx-alloc-field').forEach((input) => {
+      sum += parseFloat(input.value) || 0;
+    });
+    if (sumEl) sumEl.textContent = `${sum.toFixed(2)} €`;
+    const amountInput = document.getElementById('pm-tx-amount');
+    const isNew = document.getElementById('pm-tx-id')?.value === 'new';
+    if (amountInput && (isNew || !amountInput.dataset.manualEdited)) {
+      amountInput.value = sum.toFixed(2);
+    }
+  };
+
+  container.querySelectorAll('.pm-tx-alloc-field').forEach((input) => {
+    input.addEventListener('input', () => {
+      const amountInput = document.getElementById('pm-tx-amount');
+      if (amountInput) delete amountInput.dataset.manualEdited;
+      updateAllocSum();
+    });
+  });
+
+  const mainAmountInput = document.getElementById('pm-tx-amount');
+  if (mainAmountInput && !mainAmountInput._hasManualListener) {
+    mainAmountInput._hasManualListener = true;
+    mainAmountInput.addEventListener('input', () => {
+      mainAmountInput.dataset.manualEdited = 'true';
+    });
+  }
+
+  updateAllocSum();
+}
+
+/**
+ * Enregistre les modifications ou la création d'un versement
+ */
+function saveTransactionModal() {
+  const idInput = document.getElementById('pm-tx-id');
+  const dateInput = document.getElementById('pm-tx-date');
+  const typeSelect = document.getElementById('pm-tx-type');
+  const titleInput = document.getElementById('pm-tx-title');
+  const amountInput = document.getElementById('pm-tx-amount');
+  const noteInput = document.getElementById('pm-tx-note');
+  const syncCheckbox = document.getElementById('pm-tx-sync-portfolio');
+
+  if (!idInput) return;
+  const isNew = idInput.value === 'new';
+  const txId = isNew ? ('tx_' + Date.now()) : idInput.value;
+
+  const date = dateInput?.value || new Date().toISOString().split('T')[0];
+  const type = typeSelect?.value || 'manual';
+  const title = (titleInput?.value || '').trim() || 'Versement';
+  const amount = parseFloat(amountInput?.value) || 0;
+  let note = (noteInput?.value || '').trim();
+  const syncPortfolio = syncCheckbox?.checked ?? true;
+
+  // Récupération de la ventilation par actif
+  const newBreakdown = [];
+  const allocNotes = [];
+  document.querySelectorAll('#pm-tx-alloc-list .pm-tx-alloc-field').forEach((input) => {
+    const assetId = input.dataset.id;
+    const alloc = parseFloat(input.value) || 0;
+    if (alloc > 0) {
+      const h = (portfolioState.holdings || []).find((x) => x.id === assetId);
+      const priceEur = getAssetPriceInEur(assetId);
+      const sharesBought = alloc / priceEur;
+      newBreakdown.push({
+        assetId,
+        assetName: h ? (h.shortName || h.name) : assetId.toUpperCase(),
+        amount: alloc,
+        shares: Number(sharesBought.toFixed(4)),
+        unitPrice: priceEur,
+        prevShares: h ? h.shares : 0,
+        prevBuyPrice: h ? h.buyPrice : 0
+      });
+      allocNotes.push(`+${alloc.toFixed(0)}€ ${h ? (h.shortName || h.id.toUpperCase()) : assetId.toUpperCase()} (+${sharesBought.toFixed(3)} p.)`);
+    }
+  });
+
+  if (!note && allocNotes.length > 0) {
+    note = allocNotes.join(', ');
+  }
+
+  if (isNew) {
+    if (syncPortfolio && newBreakdown.length > 0) {
+      newBreakdown.forEach((item) => {
+        const h = (portfolioState.holdings || []).find((x) => x.id === item.assetId);
+        if (h) {
+          item.prevShares = h.shares;
+          item.prevBuyPrice = h.buyPrice;
+          const oldCost = h.shares * h.buyPrice;
+          const newCost = item.amount;
+          const newShares = h.shares + item.shares;
+          h.buyPrice = Number(((oldCost + newCost) / newShares).toFixed(2));
+          h.shares = Number(newShares.toFixed(4));
+          portfolioState.positions[h.id] = h.shares;
+        }
+      });
+      portfolioState.totalInvested = (portfolioState.totalInvested || 0) + amount;
+    }
+
+    portfolioState.history.unshift({
+      id: txId,
+      date,
+      type,
+      title,
+      amount,
+      note,
+      breakdown: newBreakdown
+    });
+  } else {
+    const existing = (portfolioState.history || []).find((t) => t.id === txId);
+    if (!existing) return;
+
+    if (syncPortfolio) {
+      // 1. Rollback ancien breakdown
+      const oldBreakdown = parseTransactionBreakdown(existing);
+      oldBreakdown.forEach((item) => {
+        const h = (portfolioState.holdings || []).find((x) => x.id.toLowerCase() === item.assetId.toLowerCase());
+        if (h) {
+          if (typeof item.prevShares === 'number' && typeof item.prevBuyPrice === 'number' && item.prevShares > 0) {
+            h.shares = Number(item.prevShares.toFixed(4));
+            h.buyPrice = Number(item.prevBuyPrice.toFixed(2));
+          } else {
+            const sharesToDeduct = Number(item.shares || item.sharesAdded || 0);
+            const amountToDeduct = Number(item.amount || 0);
+            const currentCost = h.shares * h.buyPrice;
+            const newShares = Math.max(0, h.shares - sharesToDeduct);
+            const newCost = Math.max(0, currentCost - amountToDeduct);
+            h.shares = Number(newShares.toFixed(4));
+            h.buyPrice = newShares > 0 ? Number((newCost / newShares).toFixed(2)) : h.buyPrice;
+          }
+          portfolioState.positions[h.id] = h.shares;
+        }
+      });
+      if (typeof existing.amount === 'number') {
+        portfolioState.totalInvested = Math.max(0, (portfolioState.totalInvested || 0) - existing.amount);
+      }
+
+      // 2. Application du nouveau breakdown
+      newBreakdown.forEach((item) => {
+        const h = (portfolioState.holdings || []).find((x) => x.id === item.assetId);
+        if (h) {
+          item.prevShares = h.shares;
+          item.prevBuyPrice = h.buyPrice;
+          const oldCost = h.shares * h.buyPrice;
+          const newCost = item.amount;
+          const newShares = h.shares + item.shares;
+          h.buyPrice = Number(((oldCost + newCost) / newShares).toFixed(2));
+          h.shares = Number(newShares.toFixed(4));
+          portfolioState.positions[h.id] = h.shares;
+        }
+      });
+      portfolioState.totalInvested = (portfolioState.totalInvested || 0) + amount;
+    }
+
+    existing.date = date;
+    existing.type = type;
+    existing.title = title;
+    existing.amount = amount;
+    existing.note = note;
+    existing.breakdown = newBreakdown;
+  }
+
+  savePortfolioState();
+  renderPortfolioModule();
+  if (typeof renderDashboardMarkets === 'function') renderDashboardMarkets();
+  if (typeof renderDashboardPortfolio === 'function') renderDashboardPortfolio();
+  renderPortfolioHistoryTable();
+  renderPortfolioPositionsTab();
+  renderPortfolioDcaTab();
+
+  closeTransactionModal();
+
+  if (typeof showToast === 'function') {
+    showToast(isNew ? 'Nouveau versement enregistré avec succès !' : 'Versement modifié avec succès !', 'success');
+  }
+}
+
+function closeTransactionModal() {
+  const modal = document.getElementById('portfolio-tx-modal');
+  if (!modal) return;
+  modal.classList.add('is-hidden');
+  modal.setAttribute('hidden', '');
+  modal.style.display = 'none';
+}
+
+/**
  * Rendu de l'onglet 3 : Règles DCA
  */
 function renderPortfolioDcaTab() {
   const dcaDayInput = document.getElementById('pm-dca-day');
+  const dcaEnabledToggle = document.getElementById('pm-dca-enabled-toggle');
+  const monthBanner = document.getElementById('pm-dca-month-banner');
+  const monthTitle = document.getElementById('pm-dca-month-status-title');
+  const monthSub = document.getElementById('pm-dca-month-status-sub');
+  const monthActions = document.getElementById('pm-dca-month-actions');
   const container = document.getElementById('pm-dca-allocations-list');
   const sumEl = document.getElementById('pm-dca-total-sum');
-  if (!container) return;
+
+  const now = new Date();
+  const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const monthName = now.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+  const isEnabled = portfolioState.dcaRules?.enabled !== false;
+  const targetDay = portfolioState.dcaRules?.dayOfMonth || 19;
+  const isSkippedThisMonth = Array.isArray(portfolioState.skippedDcaMonths) && portfolioState.skippedDcaMonths.includes(currentYearMonth);
+  const currentMonthTx = (portfolioState.history || []).find((h) => (h.type === 'auto' || h.title?.includes('DCA')) && h.date?.startsWith(currentYearMonth));
 
   if (dcaDayInput) {
-    dcaDayInput.value = portfolioState.dcaRules?.dayOfMonth || 19;
+    dcaDayInput.value = targetDay;
+  }
+  if (dcaEnabledToggle) {
+    dcaEnabledToggle.checked = isEnabled;
+  }
+
+  // Statut du versement du mois en cours
+  if (monthBanner) {
+    monthBanner.className = 'pm-dca-status-banner';
+    if (!isEnabled) {
+      if (monthTitle) monthTitle.textContent = `Versements automatiques désactivés`;
+      if (monthSub) monthSub.textContent = `Les versements mensuels ne sont pas exécutés automatiquement`;
+      if (monthActions) monthActions.innerHTML = '';
+    } else if (currentMonthTx && !isSkippedThisMonth) {
+      monthBanner.classList.add('executed');
+      if (monthTitle) monthTitle.textContent = `Versement de ${monthName} : Effectué (+${Number(currentMonthTx.amount || 0).toFixed(2)} €)`;
+      if (monthSub) monthSub.textContent = `Exécuté le ${currentMonthTx.date} • Cliquez ci-contre si vous ne l'avez finalement pas fait`;
+      if (monthActions) {
+        monthActions.innerHTML = `
+          <button type="button" class="pm-mini-btn danger" id="pm-dca-btn-cancel-month" title="Annuler le versement et déduire les parts">
+            <i class="fa-solid fa-ban"></i> Pas fait / Annuler
+          </button>
+        `;
+        const cancelBtn = document.getElementById('pm-dca-btn-cancel-month');
+        if (cancelBtn) {
+          cancelBtn.addEventListener('click', () => {
+            if (confirm(`Vous n'avez pas réalisé le versement de ${monthName} ?\n\nLe montant (+${Number(currentMonthTx.amount || 0).toFixed(2)} €) et les parts achetées seront déduits de votre portefeuille.`)) {
+              deletePortfolioTransaction(currentMonthTx.id, { rollbackImpact: true, markSkipped: true });
+            }
+          });
+        }
+      }
+    } else if (isSkippedThisMonth) {
+      monthBanner.classList.add('skipped');
+      if (monthTitle) monthTitle.textContent = `Versement de ${monthName} : Sauté / Ignoré`;
+      if (monthSub) monthSub.textContent = `Non pris en compte dans le portefeuille pour éviter tout biais`;
+      if (monthActions) {
+        monthActions.innerHTML = `
+          <button type="button" class="pm-mini-btn primary" id="pm-dca-btn-restore-month" title="Rétablir et exécuter le versement de ce mois">
+            <i class="fa-solid fa-rotate-left"></i> Rétablir ce mois
+          </button>
+        `;
+        const restoreBtn = document.getElementById('pm-dca-btn-restore-month');
+        if (restoreBtn) {
+          restoreBtn.addEventListener('click', () => {
+            portfolioState.skippedDcaMonths = (portfolioState.skippedDcaMonths || []).filter((m) => m !== currentYearMonth);
+            portfolioState.lastDcaExecutionMonth = null;
+            savePortfolioState();
+            checkAndApplyScheduledDca();
+            renderPortfolioModule();
+            renderPortfolioDcaTab();
+            renderPortfolioHistoryTable();
+            renderPortfolioPositionsTab();
+            if (typeof showToast === 'function') {
+              showToast(`Versement de ${monthName} rétabli et exécuté avec succès !`, 'success');
+            }
+          });
+        }
+      }
+    } else {
+      if (monthTitle) monthTitle.textContent = `Prochain versement le ${targetDay} ${monthName}`;
+      if (monthSub) monthSub.textContent = `Sera exécuté automatiquement au ${targetDay} du mois`;
+      if (monthActions) {
+        monthActions.innerHTML = `
+          <button type="button" class="pm-mini-btn neutral" id="pm-dca-btn-skip-month" title="Ne pas effectuer le versement ce mois-ci">
+            <i class="fa-solid fa-forward"></i> Passer ce mois
+          </button>
+        `;
+        const skipBtn = document.getElementById('pm-dca-btn-skip-month');
+        if (skipBtn) {
+          skipBtn.addEventListener('click', () => {
+            if (!Array.isArray(portfolioState.skippedDcaMonths)) portfolioState.skippedDcaMonths = [];
+            if (!portfolioState.skippedDcaMonths.includes(currentYearMonth)) {
+              portfolioState.skippedDcaMonths.push(currentYearMonth);
+            }
+            savePortfolioState();
+            renderPortfolioModule();
+            renderPortfolioDcaTab();
+            if (typeof showToast === 'function') {
+              showToast(`Versement de ${monthName} ignoré pour ce mois.`, 'info');
+            }
+          });
+        }
+      }
+    }
   }
 
   const holdings = portfolioState.holdings || [];
+  if (!container) return;
   if (holdings.length === 0) {
     container.innerHTML = '<div style="font-size: 0.8rem; color: rgba(255,255,255,0.45); padding: 0.5rem 0;">Aucun actif en portefeuille. Ajoutez d\'abord un actif pour lui attribuer un versement mensuel.</div>';
     if (sumEl) sumEl.textContent = '0,00 € / mois';
@@ -2397,20 +3090,58 @@ function renderPortfolioHistoryTable() {
   if (!tbody) return;
 
   if (!portfolioState.history || portfolioState.history.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: rgba(255,255,255,0.4); padding: 1.5rem 0;">Aucune transaction enregistrée.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: rgba(255,255,255,0.4); padding: 1.5rem 0;">Aucune transaction enregistrée.</td></tr>';
     return;
   }
 
   tbody.innerHTML = portfolioState.history
     .map((item) => `
-      <tr>
+      <tr data-tx-id="${item.id}">
         <td><strong>${item.date}</strong></td>
         <td><span class="portfolio-badge ${item.type === 'simulation' ? 'neutral' : (item.type === 'reset' ? 'down' : 'up')}">${item.type === 'simulation' ? 'Simulation' : (item.type === 'initial' ? 'Initial' : (item.type === 'reset' ? 'Réinit' : (item.type === 'auto' ? 'DCA Auto' : 'Achat')))}</span></td>
         <td><strong class="${item.amount > 0 ? 'text-green' : 'text-neutral'}">${item.amount > 0 ? '+' : ''}${Number(item.amount).toFixed(2)} €</strong></td>
         <td><span style="font-size: 0.75rem; color: rgba(255,255,255,0.65);">${item.note || item.title}</span></td>
+        <td style="text-align: right;">
+          <div class="pm-row-actions">
+            <button type="button" class="pm-row-action-btn edit pm-btn-edit-tx" data-tx-id="${item.id}" title="Modifier ce versement">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button type="button" class="pm-row-action-btn delete pm-btn-del-tx" data-tx-id="${item.id}" title="Supprimer ce versement">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </td>
       </tr>
     `)
     .join('');
+
+  // Gestion des clics sur Modifier
+  tbody.querySelectorAll('.pm-btn-edit-tx').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditTransactionModal(btn.dataset.txId);
+    });
+  });
+
+  // Gestion des clics sur Supprimer
+  tbody.querySelectorAll('.pm-btn-del-tx').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const txId = btn.dataset.txId;
+      const tx = (portfolioState.history || []).find((t) => t.id === txId);
+      if (!tx) return;
+      const amtStr = Number(tx.amount || 0).toFixed(2);
+      const isAutoDca = tx.type === 'auto' || tx.id.startsWith('dca_') || tx.title?.includes('DCA');
+      let msg = `Voulez-vous supprimer ce versement de ${amtStr} € (${tx.date}) ?\n\n`;
+      msg += `• Les parts et le capital investi correspondants seront déduits de votre portefeuille.\n`;
+      if (isAutoDca) {
+        msg += `• Ce versement ne se réexécutera pas automatiquement ce mois-ci.`;
+      }
+      if (confirm(msg)) {
+        deletePortfolioTransaction(txId, { rollbackImpact: true, markSkipped: true });
+      }
+    });
+  });
 }
 
 /**
@@ -2619,6 +3350,8 @@ function setupPortfolioModalHandlers() {
             const s = parseFloat(card.querySelector('.pm-field-shares')?.value);
             const dca = parseFloat(card.querySelector('.pm-field-dca')?.value);
             const notes = card.querySelector('.pm-field-notes')?.value;
+            const nameVal = card.querySelector('.pm-field-name')?.value;
+            const symVal = card.querySelector('.pm-field-symbol')?.value;
             const liveCustom = parseFloat(card.querySelector('.pm-field-live-custom')?.value);
 
             if (d) h.buyDate = d;
@@ -2631,6 +3364,8 @@ function setupPortfolioModalHandlers() {
               }
             }
             if (typeof notes === 'string') h.notes = notes.trim();
+            if (nameVal && nameVal.trim()) h.name = nameVal.trim();
+            if (symVal && symVal.trim()) h.symbol = symVal.trim().toUpperCase();
             if (!isNaN(liveCustom) && liveCustom >= 0) {
               const custAsset = marketAssets.find((a) => a.id === h.id);
               if (custAsset) {
@@ -2669,6 +3404,46 @@ function setupPortfolioModalHandlers() {
     });
   }
 
+  // Gestionnaires des versements & transactions
+  const addTxBtn = document.getElementById('pm-add-tx-btn');
+  const txCloseBtn = document.getElementById('portfolio-tx-close-btn');
+  const txCancelBtn = document.getElementById('pm-tx-cancel-btn');
+  const txBackdrop = document.getElementById('portfolio-tx-backdrop');
+  const txSaveBtn = document.getElementById('pm-tx-save-btn');
+  const txDeleteBtn = document.getElementById('pm-tx-delete-btn');
+  const dcaEnabledToggle = document.getElementById('pm-dca-enabled-toggle');
+
+  if (addTxBtn) addTxBtn.addEventListener('click', openAddTransactionModal);
+  if (txCloseBtn) txCloseBtn.addEventListener('click', closeTransactionModal);
+  if (txCancelBtn) txCancelBtn.addEventListener('click', closeTransactionModal);
+  if (txBackdrop) txBackdrop.addEventListener('click', closeTransactionModal);
+  if (txSaveBtn) txSaveBtn.addEventListener('click', saveTransactionModal);
+  if (txDeleteBtn) {
+    txDeleteBtn.addEventListener('click', () => {
+      const txId = document.getElementById('pm-tx-id')?.value;
+      if (txId && txId !== 'new') {
+        const syncPortfolio = document.getElementById('pm-tx-sync-portfolio')?.checked ?? true;
+        if (confirm("Supprimer définitivement ce versement ?\n\nLe montant et les parts associées seront ajustés dans le portefeuille.")) {
+          deletePortfolioTransaction(txId, { rollbackImpact: syncPortfolio, markSkipped: true });
+          closeTransactionModal();
+        }
+      }
+    });
+  }
+
+  if (dcaEnabledToggle) {
+    dcaEnabledToggle.addEventListener('change', () => {
+      if (!portfolioState.dcaRules) portfolioState.dcaRules = { dayOfMonth: 19, allocations: {}, enabled: true };
+      portfolioState.dcaRules.enabled = dcaEnabledToggle.checked;
+      savePortfolioState();
+      renderPortfolioModule();
+      renderPortfolioDcaTab();
+      if (typeof showToast === 'function') {
+        showToast(dcaEnabledToggle.checked ? 'Versements DCA automatiques activés.' : 'Versements DCA automatiques mis en pause.', 'info');
+      }
+    });
+  }
+
   document.querySelectorAll('#portfolio-timeframe-switch .portfolio-tf-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const tf = btn.dataset.timeframe;
@@ -2690,6 +3465,12 @@ window.portfolioState = portfolioState;
 window.openPortfolioManageModal = openPortfolioManageModal;
 window.closePortfolioManageModal = closePortfolioManageModal;
 window.deleteHoldingFromPortfolio = deleteHoldingFromPortfolio;
+window.deletePortfolioTransaction = deletePortfolioTransaction;
+window.openEditTransactionModal = openEditTransactionModal;
+window.openAddTransactionModal = openAddTransactionModal;
+window.saveTransactionModal = saveTransactionModal;
+window.closeTransactionModal = closeTransactionModal;
+window.parseTransactionBreakdown = parseTransactionBreakdown;
 window.getNextDcaDateInfo = getNextDcaDateInfo;
 window.isRealBourseDataActive = () => isRealBourseDataActive;
 

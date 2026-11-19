@@ -1009,34 +1009,47 @@
                   <!-- 4. PRÉVISIONS HORAIRES : COURBE BÉZIER 24H & PRÉCIPITATIONS MM -->
                   <div class="samsung-card samsung-hourly-card">
                     <div class="samsung-card-header">
-                      <span class="samsung-card-title"><i class="fa-solid fa-chart-line"></i> Prévisions Heure par Heure</span>
+                      <div class="samsung-card-header-main">
+                        <span class="samsung-card-title"><i class="fa-solid fa-chart-line"></i> Prévisions Horaires</span>
+                        <div class="weather-interval-toggles" id="weather-interval-toggles" role="group" aria-label="Intervalle temporel">
+                          <button type="button" class="weather-interval-btn active" data-interval="1h" title="Précision maximale : 1 heure (24 créneaux)">1H</button>
+                          <button type="button" class="weather-interval-btn" data-interval="2h" title="Précision intermédiaire : 2 heures (12 créneaux)">2H</button>
+                          <button type="button" class="weather-interval-btn" data-interval="3h" title="Vue d'ensemble : 3 heures (8 créneaux)">3H</button>
+                        </div>
+                      </div>
                       <span id="weather-chart-summary" class="samsung-card-badge">Aujourd'hui</span>
                     </div>
                     <p id="weather-hourly-summary" class="hourly-summary-text">Évolution des températures et risques d'ondées sur 24 heures.</p>
 
-                    <!-- Courbe SVG Bézier fluide -->
-                    <div class="samsung-curve-wrap">
-                      <svg id="weather-hourly-svg" class="weather-hourly-svg" viewBox="0 0 1000 130" preserveAspectRatio="none">
-                        <defs>
-                          <linearGradient id="weatherTempGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="var(--accent-primary, #a78bfa)" stop-opacity="0.45" />
-                            <stop offset="100%" stop-color="var(--accent-primary, #a78bfa)" stop-opacity="0.0" />
-                          </linearGradient>
-                        </defs>
-                        <path id="weather-graph-area" fill="url(#weatherTempGrad)" d=""></path>
-                        <path id="weather-graph-line" fill="none" stroke="var(--accent-primary, #a78bfa)" stroke-width="3" stroke-linecap="round" d=""></path>
-                      </svg>
-                    </div>
+                    <!-- Scroll container unifié pour courbe Bézier, timeline et précipitations -->
+                    <div class="samsung-hourly-scroll-wrap" id="weather-hourly-scroll-wrap">
+                      <div class="samsung-hourly-track" id="weather-hourly-track">
+                        <!-- Courbe SVG Bézier fluide -->
+                        <div class="samsung-curve-wrap">
+                          <svg id="weather-hourly-svg" class="weather-hourly-svg" viewBox="0 0 1000 130" preserveAspectRatio="none">
+                            <defs>
+                              <linearGradient id="weatherTempGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="var(--accent-primary, #a78bfa)" stop-opacity="0.45" />
+                                <stop offset="100%" stop-color="var(--accent-primary, #a78bfa)" stop-opacity="0.0" />
+                              </linearGradient>
+                            </defs>
+                            <path id="weather-graph-area" fill="url(#weatherTempGrad)" d=""></path>
+                            <path id="weather-graph-line" fill="none" stroke="var(--accent-primary, #a78bfa)" stroke-width="3" stroke-linecap="round" d=""></path>
+                            <g id="weather-graph-points"></g>
+                          </svg>
+                        </div>
 
-                    <!-- Carrousel des heures avec icônes et % de pluie -->
-                    <div id="weather-hourly-chips-row" class="samsung-hourly-timeline"></div>
+                        <!-- Carrousel des heures avec icônes et % de pluie -->
+                        <div id="weather-hourly-chips-row" class="samsung-hourly-timeline"></div>
 
-                    <!-- Sous-section Samsung : Barres de précipitations (mm) -->
-                    <div class="samsung-precip-section">
-                      <div class="precip-section-title">
-                        <i class="fa-solid fa-droplet"></i> Volume de Précipitations (mm)
+                        <!-- Sous-section Samsung : Barres de précipitations (mm) -->
+                        <div class="samsung-precip-section">
+                          <div class="precip-section-title">
+                            <i class="fa-solid fa-droplet"></i> Volume de Précipitations (mm)
+                          </div>
+                          <div id="weather-precip-bars-row" class="samsung-precip-bars-row"></div>
+                        </div>
                       </div>
-                      <div id="weather-precip-bars-row" class="samsung-precip-bars-row"></div>
                     </div>
                   </div>
 
@@ -2128,6 +2141,33 @@
                         <!-- TAB 3 : RÈGLES DCA -->
                         <div class="pm-tab-content" id="pm-tab-dca" hidden style="display: none;">
                           <p class="pm-section-desc">Définissez le jour d'exécution mensuel et les montants programmés en euros attribués chaque mois à vos actifs.</p>
+                          
+                          <!-- Toggle Versements automatiques -->
+                          <div class="pm-dca-toggle-card">
+                            <div class="pm-dca-toggle-info">
+                              <span class="pm-dca-toggle-title"><i class="fa-solid fa-robot" style="color: #60a5fa;"></i> Versements DCA automatiques</span>
+                              <span class="pm-dca-toggle-desc">Exécute automatiquement le versement chaque mois au jour configuré</span>
+                            </div>
+                            <label class="pm-switch" title="Activer / Désactiver les versements automatiques">
+                              <input type="checkbox" id="pm-dca-enabled-toggle" checked />
+                              <span class="pm-slider"></span>
+                            </label>
+                          </div>
+
+                          <!-- Bannière interactive Statut du versement du mois en cours -->
+                          <div id="pm-dca-month-banner" class="pm-dca-status-banner">
+                            <div class="pm-dca-status-info">
+                              <div class="pm-dca-status-icon"><i class="fa-regular fa-calendar-check"></i></div>
+                              <div class="pm-dca-status-text">
+                                <span class="pm-dca-status-title" id="pm-dca-month-status-title">Versement du mois</span>
+                                <span class="pm-dca-status-sub" id="pm-dca-month-status-sub">Chargement du statut...</span>
+                              </div>
+                            </div>
+                            <div id="pm-dca-month-actions">
+                              <!-- Bouton d'action dynamique (Annuler / Passer / Rétablir) -->
+                            </div>
+                          </div>
+
                           <div class="pm-dca-form">
                             <div class="pm-input-row">
                               <label for="pm-dca-day">
@@ -2157,10 +2197,18 @@
                         <!-- TAB 4 : HISTORIQUE -->
                         <div class="pm-tab-content" id="pm-tab-history" hidden style="display: none;">
                           <div class="pm-history-head-row">
-                            <p class="pm-section-desc" style="margin: 0;">Journal des achats initiaux, versements DCA et simulations.</p>
-                            <button type="button" id="pm-clear-history-btn" class="pm-mini-btn danger" title="Effacer l'historique des transactions">
-                              <i class="fa-solid fa-trash"></i> Vider
-                            </button>
+                            <div>
+                              <p class="pm-section-desc" style="margin: 0;">Journal des achats, versements DCA et opérations.</p>
+                              <span style="font-size: 0.74rem; color: rgba(255,255,255,0.5);">Modifiez ou supprimez un versement si vous ne l'avez finalement pas réalisé.</span>
+                            </div>
+                            <div class="pm-tab-quick-actions">
+                              <button type="button" id="pm-add-tx-btn" class="pm-mini-btn primary" title="Ajouter manuellement un versement ou achat">
+                                <i class="fa-solid fa-plus"></i> Nouveau versement
+                              </button>
+                              <button type="button" id="pm-clear-history-btn" class="pm-mini-btn danger" title="Effacer l'historique des transactions">
+                                <i class="fa-solid fa-trash"></i> Vider
+                              </button>
+                            </div>
                           </div>
                           <div class="pm-history-table-wrap">
                             <table class="pm-history-table">
@@ -2170,6 +2218,7 @@
                                   <th>Type</th>
                                   <th>Montant</th>
                                   <th>Détail des achats</th>
+                                  <th style="text-align: right; width: 85px;">Actions</th>
                                 </tr>
                               </thead>
                               <tbody id="pm-history-tbody">
@@ -2183,6 +2232,89 @@
                       <footer class="portfolio-dialog-footer">
                         <button type="button" id="pm-save-btn" class="modal-btn primary"><i class="fa-solid fa-check"></i> Enregistrer les modifications</button>
                         <button type="button" id="pm-cancel-btn" class="modal-btn secondary">Fermer</button>
+                      </footer>
+                    </div>
+                  </div>
+
+                  <!-- 6b. MODALE MODIFICATION / AJOUT D'UN VERSEMENT OU TRANSACTION -->
+                  <div id="portfolio-tx-modal" class="portfolio-manage-modal is-hidden" hidden style="display: none; z-index: 100000;">
+                    <div class="portfolio-manage-backdrop" id="portfolio-tx-backdrop"></div>
+                    <div class="portfolio-manage-dialog" style="max-width: 580px;">
+                      <header class="portfolio-dialog-header">
+                        <div class="portfolio-dialog-brand">
+                          <div class="portfolio-dialog-icon" style="background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #60a5fa;">
+                            <i class="fa-solid fa-receipt"></i>
+                          </div>
+                          <div>
+                            <h3 class="portfolio-dialog-title" id="pm-tx-modal-title">Modifier le Versement</h3>
+                            <span class="portfolio-dialog-sub" id="pm-tx-modal-sub">Ajustez la date, le montant ou supprimez ce versement</span>
+                          </div>
+                        </div>
+                        <button type="button" id="portfolio-tx-close-btn" class="deck-icon-action" title="Fermer (Échap)"><i class="fa-solid fa-xmark"></i></button>
+                      </header>
+
+                      <div class="portfolio-dialog-body" style="gap: 1rem;">
+                        <input type="hidden" id="pm-tx-id" value="" />
+                        
+                        <div class="pm-add-row-2">
+                          <div class="pm-input-field">
+                            <label for="pm-tx-date"><strong>Date du versement</strong></label>
+                            <input type="date" id="pm-tx-date" class="pm-input" />
+                          </div>
+                          <div class="pm-input-field">
+                            <label for="pm-tx-type"><strong>Type d'opération</strong></label>
+                            <select id="pm-tx-type" class="pm-select">
+                              <option value="auto">Versement DCA Automatique</option>
+                              <option value="manual">Achat / Versement Manuel</option>
+                              <option value="deposit">Apport de Liquidité / Épargne</option>
+                              <option value="simulation">Simulation DCA</option>
+                              <option value="initial">Apport Initial</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="pm-add-row-2">
+                          <div class="pm-input-field">
+                            <label for="pm-tx-title"><strong>Intitulé / Titre</strong></label>
+                            <input type="text" id="pm-tx-title" class="pm-input" placeholder="Ex: Versement DCA Mensuel (60 €)" />
+                          </div>
+                          <div class="pm-input-field">
+                            <label for="pm-tx-amount"><strong>Montant Total (€)</strong></label>
+                            <input type="number" step="0.01" min="0" id="pm-tx-amount" class="pm-input" placeholder="60.00" />
+                          </div>
+                        </div>
+
+                        <div class="pm-input-field">
+                          <label for="pm-tx-note"><strong>Détail &amp; Notes</strong></label>
+                          <input type="text" id="pm-tx-note" class="pm-input" placeholder="Ex: +30€ 10AP, +20€ LYP6..." />
+                        </div>
+
+                        <!-- Répartition dynamique par actif -->
+                        <div id="pm-tx-alloc-wrap" class="pm-tx-alloc-container">
+                          <div style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                            <span>Ventilation par actif :</span>
+                            <span id="pm-tx-alloc-sum" style="color: #34d399; font-size: 0.8rem; font-weight: 700;">0,00 €</span>
+                          </div>
+                          <div id="pm-tx-alloc-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                        </div>
+
+                        <!-- Option répercussion portefeuille -->
+                        <div class="pm-tx-option-card">
+                          <label class="pm-checkbox-label">
+                            <input type="checkbox" id="pm-tx-sync-portfolio" checked />
+                            <span><strong>Ajuster le portefeuille</strong> (répercuter le montant et les parts sur vos positions)</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <footer class="portfolio-dialog-footer" style="justify-content: space-between;">
+                        <button type="button" id="pm-tx-delete-btn" class="pm-mini-btn danger" style="padding: 9px 14px; font-size: 0.84rem;">
+                          <i class="fa-solid fa-trash-can"></i> Supprimer ce versement
+                        </button>
+                        <div style="display: flex; gap: 8px;">
+                          <button type="button" id="pm-tx-cancel-btn" class="modal-btn secondary">Annuler</button>
+                          <button type="button" id="pm-tx-save-btn" class="modal-btn primary"><i class="fa-solid fa-check"></i> Enregistrer</button>
+                        </div>
                       </footer>
                     </div>
                   </div>
@@ -3378,6 +3510,27 @@
               <button type="button" class="q-icon-btn" data-icon="fa-solid fa-gamepad"><i class="fa-solid fa-gamepad"></i></button>
               <button type="button" class="q-icon-btn" data-icon="fa-solid fa-brain"><i class="fa-solid fa-brain"></i></button>
             </div>
+          </div>
+
+          <!-- Sélection de couleur néon -->
+          <div class="form-row">
+            <label>Couleur d'accentuation néon :</label>
+            <div class="color-preset-row">
+              <button type="button" class="color-dot-btn active" data-color="auto" title="Automatique (Détecté via le site)">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+              </button>
+              <button type="button" class="color-dot-btn" data-color="#ff334b" style="--dot-color: #ff334b;" title="Rouge (YouTube / Netflix)"></button>
+              <button type="button" class="color-dot-btn" data-color="#38bdf8" style="--dot-color: #38bdf8;" title="Cyan (Gemini / Twitter)"></button>
+              <button type="button" class="color-dot-btn" data-color="#10b981" style="--dot-color: #10b981;" title="Émeraude (ChatGPT / Drive)"></button>
+              <button type="button" class="color-dot-btn" data-color="#f59e0b" style="--dot-color: #f59e0b;" title="Ambre (Moodle / Slides)"></button>
+              <button type="button" class="color-dot-btn" data-color="#a855f7" style="--dot-color: #a855f7;" title="Violet (GitHub / Twitch)"></button>
+              <button type="button" class="color-dot-btn" data-color="#22c55e" style="--dot-color: #22c55e;" title="Lime (TradingView / Overleaf)"></button>
+              <button type="button" class="color-dot-btn" data-color="#f43f5e" style="--dot-color: #f43f5e;" title="Rose / Crimson"></button>
+              <button type="button" class="color-dot-btn" data-color="#f97316" style="--dot-color: #f97316;" title="Corail (Claude / Cémantix)"></button>
+              <button type="button" class="color-dot-btn" data-color="#6366f1" style="--dot-color: #6366f1;" title="Indigo (Discord)"></button>
+              <input type="color" id="edit-custom-color" class="color-custom-input" title="Couleur personnalisée" value="#38bdf8" />
+            </div>
+            <input type="hidden" id="edit-color-val" value="" />
           </div>
 
           <div class="modal-actions">

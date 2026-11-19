@@ -156,9 +156,10 @@ class WeatherService {
     const cacheKey = targetCity.toLowerCase();
     const now = Date.now();
 
-    // 1. Vérifier le cache mémoire
+    // 1. Vérifier le cache mémoire (invalider si ancien format avec moins de 16 créneaux)
     const cached = this.memoryCache.get(cacheKey);
-    if (!force && cached && now - cached.timestamp < WEATHER_CACHE_TTL) {
+    const cachedPoints = cached?.data?.weather?.[0]?.hourly?.length || 0;
+    if (!force && cached && cachedPoints >= 16 && now - cached.timestamp < WEATHER_CACHE_TTL) {
       return { status: 'ok', cached: true, timestamp: cached.timestamp, data: cached.data };
     }
 
@@ -167,7 +168,7 @@ class WeatherService {
 
     // 3. Récupération météo Open-Meteo avec 7 jours + créneaux horaires
     // Modèle haute résolution ECMWF / AROME
-    const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${locInfo.latitude}&longitude=${locInfo.longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,sunrise,sunset,uv_index_max&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m&timezone=auto&forecast_days=7`;
+    const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${locInfo.latitude}&longitude=${locInfo.longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,sunrise,sunset,uv_index_max,wind_speed_10m_max&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m&timezone=auto&forecast_days=7`;
 
     try {
       const res = await this.fetchWithTimeout(forecastUrl, {}, 5000);
@@ -179,21 +180,23 @@ class WeatherService {
       const hourly = omData.hourly || {};
       const wmo = getWmoInfo(current.weather_code);
 
-      // Échantillonnage de 8 créneaux horaires (toutes les 3h sur 24h)
-      const nowIso = new Date().toISOString().slice(0, 13);
+      // Échantillonnage précis heure par heure sur les prochaines 24 heures (24 créneaux)
+      const nowD = new Date();
+      const localHourIso = `${nowD.getFullYear()}-${String(nowD.getMonth() + 1).padStart(2, '0')}-${String(nowD.getDate()).padStart(2, '0')}T${String(nowD.getHours()).padStart(2, '0')}`;
       let startIdx = 0;
       if (hourly.time && hourly.time.length) {
-        const foundIdx = hourly.time.findIndex((t) => t.startsWith(nowIso));
+        const foundIdx = hourly.time.findIndex((t) => t.startsWith(localHourIso));
         if (foundIdx !== -1) {
           startIdx = foundIdx;
         } else {
-          startIdx = Math.min(hourly.time.length - 1, Math.max(0, new Date().getHours()));
+          startIdx = Math.min(hourly.time.length - 1, Math.max(0, nowD.getHours()));
         }
       }
 
       const sampleHourly = [];
-      for (let i = 0; i < 8; i++) {
-        const idx = Math.min(hourly.time.length - 1, startIdx + i * 3);
+      const totalHours = Math.min(24, (hourly.time?.length || 0) - startIdx);
+      for (let i = 0; i < totalHours; i++) {
+        const idx = startIdx + i;
         const rawTime = hourly.time[idx] || '';
         const code = hourly.weathercode?.[idx] ?? 0;
         const hourWmo = getWmoInfo(code);
@@ -207,7 +210,7 @@ class WeatherService {
         });
       }
 
-      // Prévisions 7 jours
+      // Prévisions 7 jours avec 24h complètes pour chaque jour
       const daysList = [];
       const numDays = (daily.time || []).length;
       for (let d = 0; d < numDays; d++) {
@@ -223,30 +226,45 @@ class WeatherService {
         const sunriseStr = sunriseIso.includes('T') ? sunriseIso.split('T')[1].slice(0, 5) : sunriseIso;
         const sunsetStr = sunsetIso.includes('T') ? sunsetIso.split('T')[1].slice(0, 5) : sunsetIso;
 
+        const dayStartIdx = d * 24;
+        const dayHourly = [];
+        for (let h = 0; h < 24; h++) {
+          const hIdx = dayStartIdx + h;
+          if (hIdx < (hourly.time || []).length) {
+            const rawTime = hourly.time[hIdx] || '';
+            const hCode = hourly.weathercode?.[hIdx] ?? 0;
+            const hWmo = getWmoInfo(hCode);
+            dayHourly.push({
+              time: rawTime,
+              tempC: Math.round(hourly.temperature_2m?.[hIdx] ?? 0).toString(),
+              chanceofrain: Math.round(hourly.precipitation_probability?.[hIdx] ?? 0).toString(),
+              precipMM: (hourly.precipitation?.[hIdx] ?? 0).toString(),
+              weatherDesc: [{ value: hWmo.desc }],
+              weatherIcon: hWmo.icon,
+            });
+          }
+        }
+
         daysList.push({
           date: dateStr,
           maxtempC: maxT,
           mintempC: minT,
+          uvIndex: Math.round(daily.uv_index_max?.[d] ?? 0).toString(),
+          precipSumMM: (daily.precipitation_sum?.[d] ?? 0).toString(),
+          precipProbMax: rainProb,
+          windSpeedMax: Math.round(daily.wind_speed_10m_max?.[d] ?? 0).toString(),
           astronomy: [
             {
               sunrise: sunriseStr || '07:00',
               sunset: sunsetStr || '19:00',
             },
           ],
-          hourly: [
-            {
-              time: '1200',
-              tempC: maxT,
-              chanceofrain: rainProb,
-              precipMM: (daily.precipitation_sum?.[d] ?? 0).toString(),
-              weatherDesc: [{ value: dayWmo.desc }],
-              weatherIcon: dayWmo.icon,
-            },
-          ],
+          hourly: dayHourly,
         });
       }
 
       if (daysList[0]) {
+        daysList[0].rollingHourly = sampleHourly;
         daysList[0].hourly = sampleHourly;
       }
 

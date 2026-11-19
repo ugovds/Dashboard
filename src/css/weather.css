@@ -439,6 +439,50 @@
   gap: 1.1rem;
 }
 
+.samsung-card-header-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Sélecteur d'intervalles temporels (1H, 2H, 3H) */
+.weather-interval-toggles {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.weather-interval-btn {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.3px;
+  user-select: none;
+}
+
+.weather-interval-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.weather-interval-btn.active {
+  background: var(--accent-primary, #a78bfa);
+  color: #0b0f19;
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.45);
+}
+
 .hourly-summary-text {
   font-size: clamp(0.85rem, 1.2vh, 0.95rem);
   color: rgba(255, 255, 255, 0.85);
@@ -446,10 +490,51 @@
   margin: 0;
 }
 
+/* Conteneur de défilement unifié pour courbe Bézier, timeline et précipitations */
+.samsung-hourly-scroll-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  padding-bottom: 6px;
+  cursor: grab;
+}
+
+.samsung-hourly-scroll-wrap:active {
+  cursor: grabbing;
+}
+
+.samsung-hourly-scroll-wrap::-webkit-scrollbar {
+  height: 6px;
+}
+
+.samsung-hourly-scroll-wrap::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 99px;
+}
+
+.samsung-hourly-scroll-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 99px;
+}
+
+.samsung-hourly-scroll-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary, #a78bfa);
+}
+
+.samsung-hourly-track {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 100%;
+  transition: min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Courbe SVG Bézier fluide (Grand format proportionnel) */
 .samsung-curve-wrap {
   width: 100%;
-  height: clamp(100px, 14vh, 160px);
+  height: clamp(100px, 14vh, 150px);
   position: relative;
   overflow: visible;
   margin: 0.4rem 0;
@@ -459,26 +544,55 @@
   width: 100%;
   height: 100%;
   overflow: visible;
+  display: block;
+}
+
+/* Points et étiquettes interactifs sur la courbe */
+.weather-graph-point-group {
+  cursor: pointer;
+  transition: transform 0.18s ease;
+}
+
+.weather-graph-dot {
+  fill: var(--accent-primary, #a78bfa);
+  stroke: #0e121c;
+  stroke-width: 2.5px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.weather-graph-temp-text {
+  fill: rgba(255, 255, 255, 0.9);
+  font-size: 11px;
+  font-weight: 700;
+  text-anchor: middle;
+  user-select: none;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.weather-graph-point-group.is-hovered .weather-graph-dot,
+.weather-graph-point-group:hover .weather-graph-dot {
+  r: 6.5px;
+  fill: #ffffff;
+  stroke: var(--accent-primary, #a78bfa);
+  stroke-width: 3.5px;
+  filter: drop-shadow(0 0 8px var(--accent-primary, #a78bfa));
+}
+
+.weather-graph-point-group.is-hovered .weather-graph-temp-text,
+.weather-graph-point-group:hover .weather-graph-temp-text {
+  font-size: 13px;
+  font-weight: 800;
+  fill: #ffffff;
 }
 
 /* Carrousel d'heures */
 .samsung-hourly-timeline {
   display: flex;
-  gap: clamp(12px, 1.4vw, 24px);
-  overflow-x: auto;
-  overflow-y: hidden;
+  width: 100%;
+  gap: 0;
+  overflow: visible;
   padding: 0.6rem 0 0.8rem 0;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-}
-
-.samsung-hourly-timeline::-webkit-scrollbar {
-  height: 5px;
-}
-
-.samsung-hourly-timeline::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 99px;
 }
 
 .samsung-hour-cell {
@@ -486,20 +600,25 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  min-width: clamp(66px, 5.5vw, 98px);
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0 3px;
   text-align: center;
-  padding: clamp(8px, 1.1vh, 14px) clamp(4px, 0.5vw, 8px);
+  padding: clamp(8px, 1.1vh, 14px) clamp(2px, 0.3vw, 6px);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
   transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+  box-sizing: border-box;
+  cursor: pointer;
 }
 
-.samsung-hour-cell:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(var(--accent-primary-rgb, 167, 139, 250), 0.3);
+.samsung-hour-cell:hover,
+.samsung-hour-cell.is-hovered {
+  background: rgba(var(--accent-primary-rgb, 167, 139, 250), 0.12);
+  border-color: rgba(var(--accent-primary-rgb, 167, 139, 250), 0.45);
   transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 }
 
 .hour-time-label {
@@ -555,10 +674,10 @@
 .samsung-precip-bars-row {
   display: flex;
   align-items: flex-end;
-  gap: clamp(12px, 1.4vw, 24px);
+  gap: 0;
+  width: 100%;
   height: clamp(75px, 9vh, 115px);
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: visible;
   padding-bottom: 6px;
 }
 
@@ -567,10 +686,19 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  min-width: clamp(66px, 5.5vw, 98px);
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0 3px;
   height: 100%;
   gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.precip-bar-col.is-hovered .precip-bar-fill,
+.precip-bar-col:hover .precip-bar-fill {
+  box-shadow: 0 0 14px #8be9fd;
+  filter: brightness(1.25);
 }
 
 .precip-bar-fill {
@@ -606,7 +734,29 @@
 .samsung-multiday-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.65rem;
+}
+
+/* Carte accordéon par jour */
+.multiday-item {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.multiday-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(var(--accent-primary-rgb, 167, 139, 250), 0.35);
+}
+
+.multiday-item.is-open {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(var(--accent-primary-rgb, 167, 139, 250), 0.55);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .multiday-row {
@@ -615,30 +765,30 @@
   justify-content: space-between;
   gap: 1rem;
   padding: clamp(10px, 1.3vh, 16px) clamp(14px, 1.6vw, 22px);
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
+  cursor: pointer;
+  user-select: none;
   transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-}
-
-.multiday-row:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(var(--accent-primary-rgb, 167, 139, 250), 0.35);
-  transform: translateX(3px);
 }
 
 .multiday-day-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  width: clamp(120px, 11vw, 160px);
+  gap: 0.5rem;
+  width: clamp(130px, 12vw, 175px);
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .multiday-name {
   font-size: clamp(0.85rem, 1.2vh, 1rem);
   font-weight: 600;
   color: #ffffff;
+}
+
+.multiday-date-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
 }
 
 .multiday-rain-badge {
@@ -698,6 +848,227 @@
   color: #ffffff;
   font-weight: 700;
   width: 30px;
+}
+
+.multiday-chevron-box {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted, #94a3b8);
+  flex-shrink: 0;
+}
+
+.multiday-chevron {
+  font-size: 0.78rem;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.multiday-item.is-open .multiday-chevron {
+  transform: rotate(180deg);
+  color: var(--accent-primary, #a78bfa);
+}
+
+/* Panneau de détails accordéon */
+.multiday-detail-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 clamp(14px, 1.6vw, 22px) clamp(14px, 1.6vw, 18px) clamp(14px, 1.6vw, 22px);
+  animation: multidaySlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  margin-top: 2px;
+  padding-top: 14px;
+}
+
+@keyframes multidaySlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.multiday-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.detail-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.detail-header-title i {
+  color: var(--accent-primary, #a78bfa);
+  font-size: 1.05rem;
+}
+
+.btn-load-day-curve {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(var(--accent-primary-rgb, 167, 139, 250), 0.15);
+  border: 1px solid rgba(var(--accent-primary-rgb, 167, 139, 250), 0.4);
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-load-day-curve:hover {
+  background: var(--accent-primary, #a78bfa);
+  color: #0d1117;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.5);
+  transform: translateY(-1px);
+}
+
+.multiday-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.multiday-detail-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+.detail-chip-icon {
+  font-size: 1.1rem;
+  color: var(--accent-primary, #a78bfa);
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.detail-chip-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.detail-chip-label {
+  font-size: 0.68rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.detail-chip-val {
+  font-size: 0.8rem;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.multiday-detail-slots-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-slots-title {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.multiday-detail-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.multiday-key-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 7px 4px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.key-slot-time {
+  font-size: 0.68rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 600;
+}
+
+.key-slot-icon {
+  font-size: 1rem;
+  color: var(--accent-primary, #a78bfa);
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.key-slot-temp {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.key-slot-rain {
+  font-size: 0.64rem;
+  color: #8be9fd;
+  font-weight: 600;
+}
+
+/* Badge du jour projeté dans le titre du graphique */
+.weather-title-day-tag {
+  color: var(--accent-primary, #a78bfa);
+  font-weight: 700;
+}
+
+.btn-reset-to-now {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.btn-reset-to-now:hover {
+  background: rgba(var(--accent-primary-rgb, 167, 139, 250), 0.25);
+  border-color: var(--accent-primary, #a78bfa);
 }
 
 /* Colonne Droite : Grille des Métriques Détaillées Samsung */

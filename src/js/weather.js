@@ -222,7 +222,7 @@ async function fetchOpenMeteo(city) {
   }
 
   // Requête Open-Meteo pour 7 jours complets + données horaires et instantanées
-  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${locInfo.latitude}&longitude=${locInfo.longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,sunrise,sunset,uv_index_max&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m&timezone=auto&forecast_days=7`;
+  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${locInfo.latitude}&longitude=${locInfo.longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,sunrise,sunset,uv_index_max,wind_speed_10m_max&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m&timezone=auto&forecast_days=7`;
   const fRes = await fetch(forecastUrl);
   if (!fRes.ok) return null;
   const omData = await fRes.json();
@@ -232,22 +232,23 @@ async function fetchOpenMeteo(city) {
   const hourly = omData.hourly || {};
   const wmo = getWmoInfo(current.weather_code);
 
-  // Échantillonnage de 8 créneaux horaires sur les prochaines 24 heures (toutes les 3h)
-  const nowIso = new Date().toISOString().slice(0, 13);
+  // Échantillonnage précis heure par heure sur les prochaines 24 heures (24 créneaux complets)
+  const nowD = new Date();
+  const localHourIso = `${nowD.getFullYear()}-${String(nowD.getMonth() + 1).padStart(2, '0')}-${String(nowD.getDate()).padStart(2, '0')}T${String(nowD.getHours()).padStart(2, '0')}`;
   let startIdx = 0;
   if (hourly.time && hourly.time.length) {
-    const foundIdx = hourly.time.findIndex((t) => t.startsWith(nowIso));
+    const foundIdx = hourly.time.findIndex((t) => t.startsWith(localHourIso));
     if (foundIdx !== -1) {
       startIdx = foundIdx;
     } else {
-      const currentHour = new Date().getHours();
-      startIdx = Math.min(hourly.time.length - 1, Math.max(0, currentHour));
+      startIdx = Math.min(hourly.time.length - 1, Math.max(0, nowD.getHours()));
     }
   }
 
   const sampleHourly = [];
-  for (let i = 0; i < 8; i++) {
-    const idx = Math.min(hourly.time.length - 1, startIdx + i * 3);
+  const totalHours = Math.min(24, (hourly.time?.length || 0) - startIdx);
+  for (let i = 0; i < totalHours; i++) {
+    const idx = startIdx + i;
     const rawTime = hourly.time[idx] || '';
     const code = hourly.weathercode?.[idx] ?? 0;
     const hourWmo = getWmoInfo(code);
@@ -261,7 +262,7 @@ async function fetchOpenMeteo(city) {
     });
   }
 
-  // Formatage des 7 jours de prévisions
+  // Formatage des 7 jours de prévisions avec 24 créneaux horaires dédiés à chaque jour
   const daysList = [];
   const numDays = (daily.time || []).length;
   for (let d = 0; d < numDays; d++) {
@@ -277,31 +278,46 @@ async function fetchOpenMeteo(city) {
     const sunriseStr = sunriseIso.includes('T') ? sunriseIso.split('T')[1].slice(0, 5) : sunriseIso;
     const sunsetStr = sunsetIso.includes('T') ? sunsetIso.split('T')[1].slice(0, 5) : sunsetIso;
 
+    const dayStartIdx = d * 24;
+    const dayHourly = [];
+    for (let h = 0; h < 24; h++) {
+      const hIdx = dayStartIdx + h;
+      if (hIdx < (hourly.time || []).length) {
+        const rawTime = hourly.time[hIdx] || '';
+        const hCode = hourly.weathercode?.[hIdx] ?? 0;
+        const hWmo = getWmoInfo(hCode);
+        dayHourly.push({
+          time: rawTime,
+          tempC: Math.round(hourly.temperature_2m?.[hIdx] ?? 0).toString(),
+          chanceofrain: Math.round(hourly.precipitation_probability?.[hIdx] ?? 0).toString(),
+          precipMM: (hourly.precipitation?.[hIdx] ?? 0).toString(),
+          weatherDesc: [{ value: hWmo.desc }],
+          weatherIcon: hWmo.icon
+        });
+      }
+    }
+
     daysList.push({
       date: dateStr,
       maxtempC: maxT,
       mintempC: minT,
+      uvIndex: Math.round(daily.uv_index_max?.[d] ?? 0).toString(),
+      precipSumMM: (daily.precipitation_sum?.[d] ?? 0).toString(),
+      precipProbMax: rainProb,
+      windSpeedMax: Math.round(daily.wind_speed_10m_max?.[d] ?? 0).toString(),
       astronomy: [
         {
           sunrise: sunriseStr || '07:00',
           sunset: sunsetStr || '19:00'
         }
       ],
-      hourly: [
-        {
-          time: '1200',
-          tempC: maxT,
-          chanceofrain: rainProb,
-          precipMM: (daily.precipitation_sum?.[d] ?? 0).toString(),
-          weatherDesc: [{ value: dayWmo.desc }],
-          weatherIcon: dayWmo.icon
-        }
-      ]
+      hourly: dayHourly
     });
   }
 
-  // Le jour d'aujourd'hui reçoit l'échantillon 24h pour le graphique
+  // Le jour d'aujourd'hui reçoit l'échantillon 24h rolling pour le graphique direct
   if (daysList[0]) {
+    daysList[0].rollingHourly = sampleHourly;
     daysList[0].hourly = sampleHourly;
   }
 
@@ -361,8 +377,12 @@ async function fetchWeather() {
     // 1. Tenter la passerelle native Electron (Ultra-rapide, cache disque / mémoire)
     if (window.DesktopCockpit && typeof window.DesktopCockpit.getWeather === 'function') {
       try {
-        const dRes = await window.DesktopCockpit.getWeather(city, false);
-        if (dRes && dRes.status === 'ok' && dRes.data) {
+        let dRes = await window.DesktopCockpit.getWeather(city, false);
+        // Si Electron a renvoyé un ancien cache à 8 points, forcer la régénération
+        if (dRes?.data?.weather?.[0]?.hourly?.length && dRes.data.weather[0].hourly.length < 16) {
+          dRes = await window.DesktopCockpit.getWeather(city, true);
+        }
+        if (dRes && dRes.status === 'ok' && dRes.data?.weather?.[0]?.hourly?.length >= 16) {
           data = dRes.data;
         }
       } catch (e) {
@@ -370,12 +390,15 @@ async function fetchWeather() {
       }
     }
 
-    // 2. Fallback direct web si non-desktop ou non reçu
-    if (!data) {
+    // 2. Fallback direct web si non-desktop ou si les données reçues ont moins de 16 créneaux
+    if (!data || !data.weather?.[0]?.hourly || data.weather[0].hourly.length < 16) {
       try {
-        data = await fetchOpenMeteo(city);
+        const omData = await fetchOpenMeteo(city);
+        if (omData && omData.weather?.[0]?.hourly?.length >= 16) {
+          data = omData;
+        }
       } catch (e) {
-        console.warn('Open-Meteo failed, trying wttr.in fallback:', e);
+        console.warn('Open-Meteo direct failed, trying wttr.in fallback:', e);
       }
     }
 
@@ -514,7 +537,10 @@ function renderWeatherDeckView(data) {
     if (sunsetEl) sunsetEl.innerHTML = `<i class="fa-solid fa-moon"></i> Coucher : <strong>${astro.sunset}</strong>`;
   }
 
-  // Prévisions Multi-Jours Samsung (avec jauges thermiques)
+  // Index du jour actuellement projeté sur le grand graphique horaire (0 = rolling direct 24h, 1..6 = jour de prévision)
+  let selectedHourlyDayIndex = 0;
+
+  // Prévisions Multi-Jours Samsung (avec jauges thermiques et volets détaillés interactifs)
   const forecastList = document.getElementById('deck-weather-forecast-list');
   if (forecastList && data.weather && Array.isArray(data.weather)) {
     const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
@@ -531,12 +557,13 @@ function renderWeatherDeckView(data) {
       if (w.date === todayStr || idx === 0) dayLabel = 'Aujourd\'hui';
       else if (idx === 1) dayLabel = 'Demain';
 
-      const hourlyMid = w.hourly && (w.hourly[4] || w.hourly[0]);
+      const dateShort = dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      const hourlyMid = w.hourly && (w.hourly[12] || w.hourly[4] || w.hourly[0]);
       const dayDescRaw = hourlyMid?.weatherDesc?.[0]?.value || '';
       const dayDesc = translateWeatherDesc(dayDescRaw);
       const dayIcon = hourlyMid?.weatherIcon || getWeatherIconClass(dayDescRaw);
 
-      const maxRain = Math.max(0, ...((w.hourly || []).map((h) => parseInt(h.chanceofrain, 10) || 0)));
+      const maxRain = parseInt(w.precipProbMax, 10) || Math.max(0, ...((w.hourly || []).map((h) => parseInt(h.chanceofrain, 10) || 0)));
       const rainHtml = maxRain > 15 ? `<span class="multiday-rain-badge"><i class="fa-solid fa-droplet"></i> ${maxRain}%</span>` : '';
 
       const minT = parseInt(w.mintempC, 10);
@@ -544,29 +571,160 @@ function renderWeatherDeckView(data) {
       const leftPct = Math.max(0, Math.min(80, ((minT - allMin) / totalSpan) * 100));
       const widthPct = Math.max(12, Math.min(100 - leftPct, ((maxT - minT) / totalSpan) * 100));
 
+      const astro = w.astronomy?.[0] || { sunrise: '07:00', sunset: '19:00' };
+      const uvVal = parseInt(w.uvIndex, 10) || 0;
+      let uvLabel = 'Faible';
+      if (uvVal >= 8) uvLabel = 'Très Élevé';
+      else if (uvVal >= 6) uvLabel = 'Élevé';
+      else if (uvVal >= 3) uvLabel = 'Modéré';
+
+      const windMax = w.windSpeedMax ? `${w.windSpeedMax} km/h` : 'Modéré';
+      const precipSum = w.precipSumMM || '0.0';
+
+      // 4 créneaux clés pour l'aperçu de la journée (08h, 12h, 16h, 20h)
+      const keyHourIndices = [8, 12, 16, 20];
+      const keySlotsHtml = keyHourIndices.map((hIdx) => {
+        const hData = w.hourly?.[hIdx] || w.hourly?.[Math.floor(hIdx / 3)] || {};
+        const timeStr = `${String(hIdx).padStart(2, '0')}:00`;
+        const temp = hData.tempC ? `${hData.tempC}°` : `${Math.round((minT + maxT) / 2)}°`;
+        const icon = hData.weatherIcon || getWeatherIconClass(hData.weatherDesc?.[0]?.value || '');
+        const rain = parseInt(hData.chanceofrain, 10) || 0;
+        const rainPill = rain > 15 ? `<span class="key-slot-rain"><i class="fa-solid fa-droplet"></i> ${rain}%</span>` : '';
+        return `
+          <div class="multiday-key-slot">
+            <span class="key-slot-time">${timeStr}</span>
+            <div class="key-slot-icon"><i class="${icon}"></i></div>
+            <span class="key-slot-temp">${temp}</span>
+            ${rainPill}
+          </div>
+        `;
+      }).join('');
+
       return `
-        <div class="multiday-row" title="${dayLabel} : ${dayDesc}, Min ${minT}°C / Max ${maxT}°C">
-          <div class="multiday-day-info">
-            <span class="multiday-name">${dayLabel}</span>
-            ${rainHtml}
-          </div>
-          <div class="multiday-icon-box">
-            <i class="${dayIcon}"></i>
-          </div>
-          <div class="multiday-slider-wrap">
-            <span class="multiday-min-temp">${minT}°</span>
-            <div class="multiday-range-track">
-              <div class="multiday-range-fill" style="margin-left: ${leftPct.toFixed(1)}%; width: ${widthPct.toFixed(1)}%;"></div>
+        <div class="multiday-item" data-day-index="${idx}">
+          <div class="multiday-row" role="button" tabindex="0" data-toggle-day="${idx}" title="Cliquez pour afficher les détails complets de ${dayLabel}">
+            <div class="multiday-day-info">
+              <span class="multiday-name">${dayLabel}</span>
+              <span class="multiday-date-sub">${dateShort}</span>
+              ${rainHtml}
             </div>
-            <span class="multiday-max-temp">${maxT}°</span>
+            <div class="multiday-icon-box">
+              <i class="${dayIcon}"></i>
+            </div>
+            <div class="multiday-slider-wrap">
+              <span class="multiday-min-temp">${minT}°</span>
+              <div class="multiday-range-track">
+                <div class="multiday-range-fill" style="margin-left: ${leftPct.toFixed(1)}%; width: ${widthPct.toFixed(1)}%;"></div>
+              </div>
+              <span class="multiday-max-temp">${maxT}°</span>
+            </div>
+            <div class="multiday-chevron-box">
+              <i class="fa-solid fa-chevron-down multiday-chevron"></i>
+            </div>
+          </div>
+
+          <div class="multiday-detail-panel" id="multiday-detail-${idx}" style="display: none;">
+            <div class="multiday-detail-header">
+              <div class="detail-header-title">
+                <i class="${dayIcon}"></i>
+                <span>${dayDesc} • Amplitude : <strong>${maxT - minT}°C</strong></span>
+              </div>
+              <button type="button" class="btn-load-day-curve" data-curve-day="${idx}">
+                <i class="fa-solid fa-chart-line"></i> Voir sur le graphique 24H
+              </button>
+            </div>
+
+            <div class="multiday-detail-grid">
+              <div class="multiday-detail-chip">
+                <i class="fa-solid fa-temperature-half detail-chip-icon"></i>
+                <div class="detail-chip-texts">
+                  <span class="detail-chip-label">Écart thermique</span>
+                  <span class="detail-chip-val">Min <strong>${minT}°C</strong> / Max <strong>${maxT}°C</strong></span>
+                </div>
+              </div>
+              <div class="multiday-detail-chip">
+                <i class="fa-solid fa-droplet detail-chip-icon"></i>
+                <div class="detail-chip-texts">
+                  <span class="detail-chip-label">Précipitations</span>
+                  <span class="detail-chip-val">Risque <strong>${maxRain}%</strong> • Cumul <strong>${precipSum} mm</strong></span>
+                </div>
+              </div>
+              <div class="multiday-detail-chip">
+                <i class="fa-regular fa-sun detail-chip-icon"></i>
+                <div class="detail-chip-texts">
+                  <span class="detail-chip-label">Soleil & UV</span>
+                  <span class="detail-chip-val">Lever <strong>${astro.sunrise}</strong> / Coucher <strong>${astro.sunset}</strong> • UV <strong>${uvVal}</strong> (${uvLabel})</span>
+                </div>
+              </div>
+              <div class="multiday-detail-chip">
+                <i class="fa-solid fa-wind detail-chip-icon"></i>
+                <div class="detail-chip-texts">
+                  <span class="detail-chip-label">Vent maximal</span>
+                  <span class="detail-chip-val">Rafales jusqu'à <strong>${windMax}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="multiday-detail-slots-wrap">
+              <span class="detail-slots-title"><i class="fa-regular fa-clock"></i> Moments clés de la journée :</span>
+              <div class="multiday-detail-slots">
+                ${keySlotsHtml}
+              </div>
+            </div>
           </div>
         </div>
       `;
     }).join('');
+
+    // Écouteur d'événements pour le dépliage accordéon et le chargement du jour sur le graphique
+    if (!forecastList.dataset.boundClick) {
+      forecastList.dataset.boundClick = 'true';
+      forecastList.addEventListener('click', (e) => {
+        // Clic sur "Voir sur le graphique 24H"
+        const curveBtn = e.target.closest('[data-curve-day]');
+        if (curveBtn) {
+          e.stopPropagation();
+          const dIdx = parseInt(curveBtn.dataset.curveDay, 10);
+          selectedHourlyDayIndex = dIdx;
+          renderWeatherHourlyGraph(cachedWeatherData, getSavedWeatherInterval(), dIdx);
+          const hourlyCard = document.querySelector('.samsung-hourly-card');
+          if (hourlyCard) hourlyCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+
+        // Clic sur la ligne pour ouvrir/fermer le tiroir accordéon
+        const row = e.target.closest('[data-toggle-day]');
+        if (row) {
+          const dIdx = parseInt(row.dataset.toggleDay, 10);
+          const item = row.closest('.multiday-item');
+          const panel = document.getElementById(`multiday-detail-${dIdx}`);
+          if (!panel || !item) return;
+
+          const isCurrentlyOpen = item.classList.contains('is-open');
+
+          // Fermer les autres volets
+          forecastList.querySelectorAll('.multiday-item.is-open').forEach((otherItem) => {
+            if (otherItem !== item) {
+              otherItem.classList.remove('is-open');
+              const otherPanel = otherItem.querySelector('.multiday-detail-panel');
+              if (otherPanel) otherPanel.style.display = 'none';
+            }
+          });
+
+          if (isCurrentlyOpen) {
+            item.classList.remove('is-open');
+            panel.style.display = 'none';
+          } else {
+            item.classList.add('is-open');
+            panel.style.display = 'flex';
+          }
+        }
+      });
+    }
   }
 
-  // Graphique interactif des températures et barres de pluie (24h)
-  renderWeatherHourlyGraph(data);
+  // Graphique interactif des températures et barres de pluie (selon l'intervalle actif et le jour sélectionné)
+  renderWeatherHourlyGraph(data, getSavedWeatherInterval(), selectedHourlyDayIndex);
 
   // Mise à jour de l'URL du radar satellite RainViewer
   updateWeatherRadar(area);
@@ -577,35 +735,95 @@ function renderWeatherDeckView(data) {
   }
 }
 
+const WEATHER_INTERVAL_STORAGE_KEY = 'dashboard_weather_interval';
+
+function getSavedWeatherInterval() {
+  const val = localStorage.getItem(WEATHER_INTERVAL_STORAGE_KEY);
+  return (val === '2h' || val === '3h') ? val : '1h';
+}
+
+function setSavedWeatherInterval(val) {
+  if (val === '1h' || val === '2h' || val === '3h') {
+    localStorage.setItem(WEATHER_INTERVAL_STORAGE_KEY, val);
+  }
+}
+
+function updateIntervalButtons(activeInterval) {
+  const toggles = document.getElementById('weather-interval-toggles');
+  if (!toggles) return;
+  const buttons = toggles.querySelectorAll('.weather-interval-btn');
+  buttons.forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.interval === activeInterval);
+  });
+}
+
 /**
- * Construit la courbe de Bézier et les barres de précipitations Samsung 24h
+ * Construit la courbe de Bézier et les barres de précipitations Samsung (avec intervalle dynamique 1H, 2H, 3H et support de n'importe quel jour)
  */
-function renderWeatherHourlyGraph(data) {
+function renderWeatherHourlyGraph(data, customInterval, customDayIndex) {
+  const interval = customInterval || getSavedWeatherInterval();
+  if (typeof customDayIndex === 'number') {
+    selectedHourlyDayIndex = customDayIndex;
+  }
+  const dayIdx = selectedHourlyDayIndex;
+
+  const svgEl = document.getElementById('weather-hourly-svg');
   const lineEl = document.getElementById('weather-graph-line');
   const areaEl = document.getElementById('weather-graph-area');
+  const pointsGroup = document.getElementById('weather-graph-points');
   const chipsRow = document.getElementById('weather-hourly-chips-row');
   const chartSummary = document.getElementById('weather-chart-summary');
+  const hourlySummary = document.getElementById('weather-hourly-summary');
   const precipRow = document.getElementById('weather-precip-bars-row');
+  const track = document.getElementById('weather-hourly-track');
+  const scrollWrap = document.getElementById('weather-hourly-scroll-wrap');
 
-  if (!data?.weather?.[0]?.hourly) return;
-  const hourly = data.weather[0].hourly;
+  if (!data?.weather || !data.weather[dayIdx]) return;
+  const targetDay = data.weather[dayIdx];
 
-  const temps = hourly.map((h) => parseInt(h.tempC, 10));
+  // Si jour 0 (aujourd'hui), utiliser l'échantillon 24h rolling depuis maintenant s'il existe
+  let rawHourly = (dayIdx === 0 && targetDay.rollingHourly) ? targetDay.rollingHourly : (targetDay.hourly || []);
+
+  // Filtrer selon l'intervalle sélectionné
+  let sampledHourly = rawHourly;
+  if (rawHourly.length > 8) {
+    if (interval === '2h') {
+      sampledHourly = rawHourly.filter((_, idx) => idx % 2 === 0);
+    } else if (interval === '3h') {
+      sampledHourly = rawHourly.filter((_, idx) => idx % 3 === 0);
+    }
+  }
+
+  const n = sampledHourly.length;
+  if (n === 0) return;
+
+  const cellWidth = interval === '1h' ? 72 : (interval === '2h' ? 84 : 96);
+  const trackMinWidth = n * cellWidth;
+  if (track) {
+    track.style.minWidth = `${trackMinWidth}px`;
+  }
+
+  const temps = sampledHourly.map((h) => parseInt(h.tempC, 10));
   const minTemp = Math.min(...temps) - 1;
   const maxTemp = Math.max(...temps) + 1;
   const tempRange = Math.max(1, maxTemp - minTemp);
 
-  const svgW = 1000;
+  const svgW = trackMinWidth;
   const svgH = 130;
-  const padX = 45;
-  const padY = 24;
-  const usableW = svgW - padX * 2;
-  const usableH = svgH - padY * 2;
+  const padYTop = 32;
+  const padYBottom = 16;
+  const usableH = svgH - padYTop - padYBottom;
 
-  const points = hourly.map((h, i) => {
-    const x = padX + i * (usableW / (hourly.length - 1));
+  if (svgEl) {
+    svgEl.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+  }
+
+  // Coordonnées : le point i est aligné exactement au centre horizontal du créneau i
+  const slotW = svgW / n;
+  const points = sampledHourly.map((h, i) => {
+    const x = (i + 0.5) * slotW;
     const t = parseInt(h.tempC, 10);
-    const y = padY + (1 - (t - minTemp) / tempRange) * usableH;
+    const y = padYTop + (1 - (t - minTemp) / tempRange) * usableH;
     return {
       x,
       y,
@@ -619,44 +837,86 @@ function renderWeatherHourlyGraph(data) {
   });
 
   // Construction de la courbe SVG lissée (Bézier spline)
-  let linePath = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+  let linePath = `M 0 ${points[0].y.toFixed(1)} L ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
   for (let i = 1; i < points.length; i++) {
     const prev = points[i - 1];
     const curr = points[i];
     const cX = (prev.x + curr.x) / 2;
     linePath += ` C ${cX.toFixed(1)} ${prev.y.toFixed(1)}, ${cX.toFixed(1)} ${curr.y.toFixed(1)}, ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
   }
+  linePath += ` L ${svgW} ${points[points.length - 1].y.toFixed(1)}`;
 
-  const areaPath = `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${svgH} L ${points[0].x.toFixed(1)} ${svgH} Z`;
+  const areaPath = `${linePath} L ${svgW} ${svgH} L 0 ${svgH} Z`;
 
   if (lineEl) lineEl.setAttribute('d', linePath);
   if (areaEl) areaEl.setAttribute('d', areaPath);
 
+  // Points et étiquettes thermiques interactifs sur la courbe
+  if (pointsGroup) {
+    pointsGroup.innerHTML = points.map((p, idx) => `
+      <g class="weather-graph-point-group" data-idx="${idx}">
+        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" class="weather-graph-dot"></circle>
+        <text x="${p.x.toFixed(1)}" y="${(p.y - 10).toFixed(1)}" class="weather-graph-temp-text">${p.temp}°</text>
+      </g>
+    `).join('');
+  }
+
+  // Titre dynamique avec badge pour revenir à aujourd'hui si un autre jour est sélectionné
+  const cardTitle = document.querySelector('.samsung-hourly-card .samsung-card-title');
+  if (cardTitle) {
+    if (dayIdx > 0 && targetDay.date) {
+      const parts = targetDay.date.split('-').map(Number);
+      const dDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+      const dayName = days[dDate.getDay()];
+      cardTitle.innerHTML = `<i class="fa-solid fa-chart-line"></i> Prévisions Horaires — <span class="weather-title-day-tag">${dayName}</span> <button type="button" class="btn-reset-to-now" id="btn-reset-to-now" title="Revenir aux prochaines 24h directes"><i class="fa-solid fa-rotate-left"></i> Direct 24H</button>`;
+      const resetBtn = document.getElementById('btn-reset-to-now');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectedHourlyDayIndex = 0;
+          renderWeatherHourlyGraph(cachedWeatherData, getSavedWeatherInterval(), 0);
+        });
+      }
+    } else {
+      cardTitle.innerHTML = `<i class="fa-solid fa-chart-line"></i> Prévisions Horaires`;
+    }
+  }
+
+  // Badges d'information et résumé
+  const minT = Math.min(...temps);
+  const maxT = Math.max(...temps);
+  const intervalLabel = interval === '1h' ? '1 heure' : (interval === '2h' ? '2 heures' : '3 heures');
+
   if (chartSummary) {
-    const minT = Math.min(...temps);
-    const maxT = Math.max(...temps);
-    chartSummary.textContent = `Min ${minT}°C • Max ${maxT}°C`;
+    chartSummary.textContent = `${n} créneaux (${intervalLabel}) • Min ${minT}°C / Max ${maxT}°C`;
+  }
+
+  if (hourlySummary) {
+    const labelPrecision = interval === '1h' ? 'heure par heure (précision maximale)' : (interval === '2h' ? 'toutes les 2 heures' : 'toutes les 3 heures');
+    const dayContext = dayIdx === 0 ? 'sur les prochaines 24 heures' : `sur la journée du ${targetDay.date}`;
+    hourlySummary.textContent = `Évolution prévisionnelle ${dayContext} — ${labelPrecision}.`;
   }
 
   // Carrousel horizontal Samsung avec heure, icône, température et probabilité de pluie
-  if (chipsRow) {
-    const formatHour = (rawTime, idx) => {
-      if (idx === 0) return 'Maintenant';
-      if (typeof rawTime === 'string') {
-        if (rawTime.includes('T')) return rawTime.split('T')[1].slice(0, 5);
-        if (rawTime.includes(':')) return rawTime.slice(0, 5);
-      }
-      const h = Math.floor(parseInt(rawTime, 10) / 100);
-      return `${String(h).padStart(2, '0')}:00`;
-    };
+  const formatHour = (rawTime, idx) => {
+    if (dayIdx === 0 && idx === 0) return 'Maintenant';
+    if (typeof rawTime === 'string') {
+      if (rawTime.includes('T')) return rawTime.split('T')[1].slice(0, 5);
+      if (rawTime.includes(':')) return rawTime.slice(0, 5);
+    }
+    const h = Math.floor(parseInt(rawTime, 10) / 100);
+    return `${String(h).padStart(2, '0')}:00`;
+  };
 
+  if (chipsRow) {
     chipsRow.innerHTML = points.map((p, idx) => {
       const iconCls = p.icon || getWeatherIconClass(p.desc);
       const rainHtml = p.rain > 10
         ? `<span class="hour-rain-drop"><i class="fa-solid fa-droplet"></i> ${p.rain}%</span>`
         : '<span class="hour-rain-drop" style="opacity:0;">--</span>';
       return `
-        <div class="samsung-hour-cell" title="${formatHour(p.hour, idx)} : ${p.temp}°C, Pluie ${p.rain}%, ${p.desc}">
+        <div class="samsung-hour-cell" data-idx="${idx}" title="${formatHour(p.hour, idx)} : ${p.temp}°C, Pluie ${p.rain}%, ${p.desc}">
           <span class="hour-time-label">${formatHour(p.hour, idx)}</span>
           <div class="hour-icon"><i class="${iconCls}"></i></div>
           <span class="hour-temp-val">${p.temp}°</span>
@@ -671,16 +931,44 @@ function renderWeatherHourlyGraph(data) {
     const precips = points.map((p) => p.precip);
     const maxPrecip = Math.max(1.5, ...precips); // minimum 1.5mm pour que l'échelle soit jolie
 
-    precipRow.innerHTML = points.map((p) => {
+    precipRow.innerHTML = points.map((p, idx) => {
       const heightPct = Math.min(100, Math.max(4, (p.precip / maxPrecip) * 100));
       return `
-        <div class="precip-bar-col" title="${p.precip.toFixed(2)} mm de précipitations">
+        <div class="precip-bar-col" data-idx="${idx}" title="${formatHour(p.hour, idx)} : ${p.precip.toFixed(2)} mm de précipitations">
           <div class="precip-bar-fill" style="height: ${heightPct.toFixed(0)}%;"></div>
           <span class="precip-val-label">${p.precip > 0 ? p.precip.toFixed(1) : '0.0'} mm</span>
         </div>
       `;
     }).join('');
   }
+
+  // Synchronisation interactive du survol (Courbe <-> Cellules <-> Barres de pluie)
+  if (track && !track.dataset.hoverBound) {
+    track.dataset.hoverBound = 'true';
+    track.addEventListener('mouseover', (e) => {
+      const target = e.target.closest('[data-idx]');
+      if (!target) return;
+      const idx = target.dataset.idx;
+      track.querySelectorAll('.is-hovered').forEach((el) => el.classList.remove('is-hovered'));
+      track.querySelectorAll(`[data-idx="${idx}"]`).forEach((el) => el.classList.add('is-hovered'));
+    });
+    track.addEventListener('mouseleave', () => {
+      track.querySelectorAll('.is-hovered').forEach((el) => el.classList.remove('is-hovered'));
+    });
+  }
+
+  // Conversion du scroll molette vertical en défilement horizontal fluide
+  if (scrollWrap && !scrollWrap.dataset.wheelBound) {
+    scrollWrap.dataset.wheelBound = 'true';
+    scrollWrap.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && scrollWrap.scrollWidth > scrollWrap.clientWidth) {
+        e.preventDefault();
+        scrollWrap.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+  }
+
+  updateIntervalButtons(interval);
 }
 
 /**
@@ -811,6 +1099,22 @@ function initWeather() {
     });
   }
 
+  // Sélecteur d'intervalle horaire (1H, 2H, 3H)
+  const intervalToggles = document.getElementById('weather-interval-toggles');
+  if (intervalToggles) {
+    intervalToggles.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-interval]');
+      if (!btn) return;
+      const interval = btn.dataset.interval;
+      setSavedWeatherInterval(interval);
+      updateIntervalButtons(interval);
+      if (cachedWeatherData) {
+        renderWeatherHourlyGraph(cachedWeatherData, interval);
+      }
+    });
+  }
+  updateIntervalButtons(getSavedWeatherInterval());
+
   // Le radar satellite est désormais intégré directement dans le flux principal
   const radarPanel = document.getElementById('weather-radar-panel');
   if (radarPanel) {
@@ -820,16 +1124,21 @@ function initWeather() {
   renderWeatherFavorites();
   updateFavButtonState();
 
-  // Hydratation synchrone immédiate depuis le cache local (0 ms de latence)
+  // Hydratation synchrone immédiate depuis le cache local (uniquement si valide >= 16 créneaux)
   const cacheEntry = getStoredWeatherCache();
-  if (cacheEntry && cacheEntry.data) {
+  const cachedPointsCount = cacheEntry?.data?.weather?.[0]?.hourly?.length || 0;
+  if (cacheEntry && cacheEntry.data && cachedPointsCount >= 16) {
     cachedWeatherData = cacheEntry.data;
     renderWeatherDeckView(cacheEntry.data);
+  } else {
+    // Purge immédiate de l'ancien cache obsolète (< 16 créneaux)
+    try { localStorage.removeItem('startpage_weather_cache'); } catch {}
+    fetchWeather();
   }
 
-  // Revalidation réseau si le cache est absent ou périmé (> 30 min)
+  // Revalidation réseau périodique (> 30 min)
   const isExpired = !cacheEntry || (Date.now() - (cacheEntry.time || 0) > 1800000);
-  if (isExpired) {
+  if (isExpired && cachedPointsCount >= 16) {
     fetchWeather();
   }
   setInterval(fetchWeather, 1800000); // 30 minutes

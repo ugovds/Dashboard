@@ -89,16 +89,44 @@
     }
   }
 
+  const VIBRANT_ACCENT_PALETTE = [
+    '#38bdf8', '#ef4444', '#f59e0b', '#10b981', '#a855f7', '#22c55e',
+    '#06b6d4', '#f43f5e', '#f97316', '#6366f1', '#eab308', '#14b8a6'
+  ];
+
+  function hexToRgba(hex, alpha) {
+    let c = (hex || '').replace('#', '').trim();
+    if (c.length === 3) c = c.split('').map((x) => x + x).join('');
+    if (c.length !== 6) return `rgba(49, 225, 247, ${alpha})`;
+    const num = parseInt(c, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  function hashStringToColor(str) {
+    if (!str) return VIBRANT_ACCENT_PALETTE[0];
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    const idx = Math.abs(hash) % VIBRANT_ACCENT_PALETTE.length;
+    return VIBRANT_ACCENT_PALETTE[idx];
+  }
+
   function getSiteVisualTheme(site) {
     const url = (site.url || '').toLowerCase();
     const name = (site.name || '').toLowerCase();
 
+    // Mapping des grandes marques avec leurs couleurs et icônes officielles
     if (url.includes('youtube') || name.includes('youtube')) {
       return {
         accent: '#ff334b',
         bg: 'linear-gradient(135deg, rgba(255, 51, 75, 0.22), rgba(185, 28, 28, 0.08))',
         border: 'rgba(255, 51, 75, 0.38)',
-        glow: 'rgba(255, 51, 75, 0.35)',
+        glow: 'rgba(255, 51, 75, 0.38)',
         icon: 'fa-brands fa-youtube'
       };
     }
@@ -107,7 +135,7 @@
         accent: '#38bdf8',
         bg: 'linear-gradient(135deg, rgba(56, 189, 248, 0.24), rgba(14, 165, 233, 0.08))',
         border: 'rgba(56, 189, 248, 0.38)',
-        glow: 'rgba(56, 189, 248, 0.35)',
+        glow: 'rgba(56, 189, 248, 0.38)',
         icon: 'fa-solid fa-wand-magic-sparkles'
       };
     }
@@ -116,7 +144,7 @@
         accent: '#10b981',
         bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.08))',
         border: 'rgba(16, 185, 129, 0.38)',
-        glow: 'rgba(16, 185, 129, 0.35)',
+        glow: 'rgba(16, 185, 129, 0.38)',
         icon: 'fa-solid fa-bolt'
       };
     }
@@ -125,7 +153,7 @@
         accent: '#a78bfa',
         bg: 'linear-gradient(135deg, rgba(167, 139, 250, 0.22), rgba(124, 58, 237, 0.08))',
         border: 'rgba(167, 139, 250, 0.38)',
-        glow: 'rgba(167, 139, 250, 0.35)',
+        glow: 'rgba(167, 139, 250, 0.38)',
         icon: 'fa-brands fa-github'
       };
     }
@@ -134,7 +162,7 @@
         accent: '#f59e0b',
         bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.24), rgba(217, 119, 6, 0.08))',
         border: 'rgba(245, 158, 11, 0.38)',
-        glow: 'rgba(245, 158, 11, 0.35)',
+        glow: 'rgba(245, 158, 11, 0.38)',
         icon: 'fa-solid fa-graduation-cap'
       };
     }
@@ -143,15 +171,64 @@
         accent: '#22c55e',
         bg: 'linear-gradient(135deg, rgba(34, 197, 94, 0.22), rgba(22, 163, 74, 0.08))',
         border: 'rgba(34, 197, 94, 0.38)',
-        glow: 'rgba(34, 197, 94, 0.35)',
+        glow: 'rgba(34, 197, 94, 0.38)',
         icon: 'fa-solid fa-chart-line'
       };
     }
+    if (url.includes('twitch') || name.includes('twitch')) {
+      return {
+        accent: '#a855f7',
+        bg: 'linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(124, 58, 237, 0.08))',
+        border: 'rgba(168, 85, 247, 0.38)',
+        glow: 'rgba(168, 85, 247, 0.38)',
+        icon: 'fa-brands fa-twitch'
+      };
+    }
+    if (url.includes('reddit') || name.includes('reddit')) {
+      return {
+        accent: '#ff4500',
+        bg: 'linear-gradient(135deg, rgba(255, 69, 0, 0.22), rgba(194, 54, 0, 0.08))',
+        border: 'rgba(255, 69, 0, 0.38)',
+        glow: 'rgba(255, 69, 0, 0.38)',
+        icon: 'fa-brands fa-reddit'
+      };
+    }
+    if (url.includes('discord') || name.includes('discord')) {
+      return {
+        accent: '#6366f1',
+        bg: 'linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(67, 56, 202, 0.08))',
+        border: 'rgba(99, 102, 241, 0.38)',
+        glow: 'rgba(99, 102, 241, 0.38)',
+        icon: 'fa-brands fa-discord'
+      };
+    }
+    if (url.includes('twitter') || url.includes('x.com') || name.includes('twitter')) {
+      return {
+        accent: '#38bdf8',
+        bg: 'linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(14, 165, 233, 0.08))',
+        border: 'rgba(56, 189, 248, 0.38)',
+        glow: 'rgba(56, 189, 248, 0.38)',
+        icon: 'fa-brands fa-x-twitter'
+      };
+    }
+    if (url.includes('claude') || name.includes('claude')) {
+      return {
+        accent: '#f97316',
+        bg: 'linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(194, 65, 12, 0.08))',
+        border: 'rgba(249, 115, 22, 0.38)',
+        glow: 'rgba(249, 115, 22, 0.38)',
+        icon: 'fa-solid fa-brain'
+      };
+    }
+
+    // Couleur dynamique harmonisée
+    const domain = getCleanDomain(site.url);
+    const color = (site.color && site.color.startsWith('#')) ? site.color : hashStringToColor(domain || name);
     return {
-      accent: '#31e1f7',
-      bg: 'linear-gradient(135deg, rgba(49, 225, 247, 0.18), rgba(181, 95, 230, 0.1))',
-      border: 'rgba(49, 225, 247, 0.32)',
-      glow: 'rgba(49, 225, 247, 0.3)',
+      accent: color,
+      bg: `linear-gradient(135deg, ${hexToRgba(color, 0.22)}, ${hexToRgba(color, 0.07)})`,
+      border: hexToRgba(color, 0.38),
+      glow: hexToRgba(color, 0.38),
       icon: site.icon || 'fa-solid fa-globe'
     };
   }
@@ -599,10 +676,15 @@
         iconClass = getWeatherIconClass(cur.weatherDesc?.[0]?.value);
       }
 
-      // Extraction des 8 créneaux horaires
+      // Extraction des créneaux horaires (échantillonnés à 8 pour le mini-widget compact)
       const today = data.weather?.[0];
       if (today && Array.isArray(today.hourly) && today.hourly.length) {
-        hourlyList = today.hourly.map((h, i) => {
+        let rawList = today.hourly;
+        if (rawList.length > 8) {
+          const step = Math.floor(rawList.length / 8);
+          rawList = rawList.filter((_, idx) => idx % step === 0).slice(0, 8);
+        }
+        hourlyList = rawList.map((h, i) => {
           let timeLabel = h.time || '';
           if (timeLabel.includes('T')) {
             timeLabel = timeLabel.split('T')[1].slice(0, 5);
