@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Violet Cockpit
+GenericName=Dashboard
+Comment=Cyberdeck Startpage & Dashboard de Bureau Haute Performance
+Keywords=dashboard;startpage;violet;cockpit;
+Exec=/home/ugovds/Documents/Dashboard/run-desktop.sh
+Icon=/home/ugovds/Documents/Dashboard/assets/icons/icon.png
+Terminal=false
+Type=Application
+Categories=Utility;Dashboard;Development;
+StartupNotify=true
+StartupWMClass=violet-cockpit
